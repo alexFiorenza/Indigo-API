@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   municipality: { type: String, required: true },
   street: { type: String, required: true },
   google: { type: Boolean, default: false },
+  role: { type: String, default: 'user' },
 });
 
 module.exports = mongoose.model('User', userSchema);
