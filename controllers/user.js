@@ -1,10 +1,19 @@
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const User = require('../models/user');
-
-//TODO Finish get a user per given id
+const { handleError, handleResponse } = require('../utils/manageResponse');
+const { createToken } = require('../utils/auth');
+/*Get one user per id*/
 const getOneUserPerId = (req, res) => {
   const { id } = req.params;
+  User.findById(id, (err, userFound) => {
+    if (err) {
+      return handleError(500, req, res);
+    } else if (userFound === undefined) {
+      return handleError(404, req, res, 'Data not found');
+    }
+    return handleResponse(200, req, res, userFound);
+  });
 };
 /*Register one user*/
 const registerUser = (req, res) => {
@@ -22,23 +31,54 @@ const registerUser = (req, res) => {
   Object.assign(data, { password: encryptedPassword });
   User.find({ email: data.email }, (err, userFound) => {
     if (err) {
-      return res.status(500).json({ status: false, err });
+      return handleError(500, req, res);
     }
     if (userFound.length > 0) {
-      return res.status(500).json({
-        status: false,
-        err: 'There is already a user with that email',
-      });
+      return handleError(500, req, res, 'User already exists');
     }
     User.create(data, (err) => {
       if (err) {
-        return res.status(500).json({ status: false, err });
+        return handleError(500, req, res);
       }
-      return res.status(200).json({ status: true, response: data });
+      return handleResponse(200, req, res, data);
+    });
+  });
+};
+/*Login user*/
+const loginUser = (req, res) => {
+  const body = req.body;
+  User.findOne({ email: body.email }, (err, userFound) => {
+    if (!userFound) {
+      return handleError(400, req, res, 'User does not exist');
+    } else if (err) {
+      return handleError(500, req, res);
+    }
+    bcrypt.compare(body.password, userFound.password, (err, same) => {
+      if (!same) {
+        return handleError(500, req, res, 'Wrong password');
+      }
+      const payload = _.pick(userFound, [
+        'name',
+        'location',
+        'municipality',
+        'street',
+        'role',
+        'email',
+        'province',
+      ]);
+      createToken(payload)
+        .then((data) => {
+          const token = data;
+          return handleResponse(200, req, res, { token, payload });
+        })
+        .catch((err) => {
+          return handleError(500, req, res);
+        });
     });
   });
 };
 module.exports = {
   getOneUserPerId,
   registerUser,
+  loginUser,
 };

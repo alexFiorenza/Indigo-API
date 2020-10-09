@@ -6,6 +6,7 @@ const db = require('./db/config');
 const chalk = require('chalk');
 
 //**Config vars and imports**/
+require('dotenv').config();
 const userRoutes = require('./routes/user');
 const PORT = process.env.PORT || 3000;
 let mongoUrl = '';

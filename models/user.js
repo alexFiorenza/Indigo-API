@@ -7,7 +7,6 @@ const userSchema = new mongoose.Schema({
   province: { type: String, required: true },
   municipality: { type: String, required: true },
   street: { type: String, required: true },
-  google: { type: Boolean, default: false },
   role: { type: String, default: 'user' },
 });
 
