@@ -1,16 +1,21 @@
 const jwt = require('jsonwebtoken');
 const verifyToken = (req, res, next) => {
   const key = process.env.JWT_SECRET;
-  const token = req.headers.authorization.replace(/['"]+/g, '');
-  jwt.verify(token, key, (err, decoded) => {
-    if (err) {
-      return next(new Error('Token is not valid'));
-    } else if (decoded === undefined) {
-      return next(new Error('Token could not be loaded'));
-    }
-    req.user = decoded;
-    next();
-  });
+  const headerAuth = req.headers.authorization;
+  if (headerAuth === undefined) {
+    return next(new Error('Token was not provided'));
+  } else {
+    const token = headerAuth.replace(/['"]+/g, '');
+    jwt.verify(token, key, (err, decoded) => {
+      if (err) {
+        return next(new Error('Token is not valid'));
+      } else if (decoded === undefined) {
+        return next(new Error('Token could not be loaded'));
+      }
+      req.user = decoded;
+      next();
+    });
+  }
 };
 const verifyAdmin = (req, res, next) => {
   const user_role = req.user.role;

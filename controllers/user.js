@@ -3,6 +3,7 @@ const _ = require('underscore');
 const User = require('../models/user');
 const { handleError, handleResponse } = require('../utils/manageResponse');
 const { createToken } = require('../utils/auth');
+const manageResponse = require('../utils/manageResponse');
 /*Get one user per id*/
 const getOneUserPerId = (req, res) => {
   const { id } = req.params;
@@ -65,6 +66,7 @@ const loginUser = (req, res) => {
         'role',
         'email',
         'province',
+        '_id',
       ]);
       createToken(payload)
         .then((data) => {
@@ -77,8 +79,26 @@ const loginUser = (req, res) => {
     });
   });
 };
+//TODO
+/* Update user*/
+const updateUser = (req, res) => {};
+
+//TODO
+/*Delete user*/
+const deleteUser = (req, res) => {
+  const id = req.params.id;
+  User.findByIdAndDelete(id, (err, userDeleted) => {
+    if (err) {
+      return handleError(500, req, res);
+    }
+    return handleResponse(200, req, res, 'User deleted correctly');
+  });
+};
+
 module.exports = {
   getOneUserPerId,
   registerUser,
   loginUser,
+  updateUser,
+  deleteUser,
 };

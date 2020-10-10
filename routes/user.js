@@ -6,5 +6,7 @@ const { verifyToken } = require('../utils/auth');
 router.get('/:id', userController.getOneUserPerId);
 router.post('/register', userController.registerUser);
 router.post('/login', userController.loginUser);
+router.put('/:id', verifyToken, userController.updateUser);
+router.delete('/:id', verifyToken, userController.deleteUser);
 
 module.exports = router;
