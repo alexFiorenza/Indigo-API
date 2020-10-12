@@ -79,11 +79,29 @@ const loginUser = (req, res) => {
     });
   });
 };
-//TODO
 /* Update user*/
-const updateUser = (req, res) => {};
+const updateUser = (req, res) => {
+  const id = req.params.id;
+  const body = req.body;
+  const dataToUpdate = _.pick(body, [
+    'name',
+    'municipality',
+    'province',
+    'street',
+  ]);
+  User.findByIdAndUpdate(
+    id,
+    dataToUpdate,
+    { new: true },
+    (err, userUpdated) => {
+      if (err) {
+        return handleError(500, req, res);
+      }
+      return manageResponse(200, req, res, userUpdated);
+    }
+  );
+};
 
-//TODO
 /*Delete user*/
 const deleteUser = (req, res) => {
   const id = req.params.id;
