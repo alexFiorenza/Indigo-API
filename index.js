@@ -10,6 +10,7 @@ const cors = require('cors');
 require('dotenv').config();
 const userRoutes = require('./routes/user');
 const productRoutes = require('./routes/product');
+const orderRoutes = require('./routes/orders');
 const PORT = process.env.PORT || 3000;
 let mongoUrl = '';
 if (PORT === 3000) {
@@ -24,6 +25,7 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use('/api/user', userRoutes);
 app.use('/api/product', productRoutes);
+app.use('/api/orders', orderRoutes);
 
 //**Connection to Database and server**/
 db(mongoUrl)
