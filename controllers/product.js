@@ -4,6 +4,7 @@ const fs = require('fs');
 const Product = require('../models/product.js');
 const path = require('path');
 const _ = require('underscore');
+const { resolveExtension, deleteFiles } = require('../utils/uploads');
 /*Get product depending on id*/
 const getProductPerId = (req, res) => {
   const id = req.params.id;
@@ -75,84 +76,102 @@ const deleteProduct = (req, res) => {
     });
   });
 };
-
+//TODO Refactor service for upload Image,simplify it and add gcp service
 const uploadImage = (req, res) => {
   const id = req.params.id;
   const body = req.body;
-  const image = req.files.image;
-  const fileName = image.name.replace(/\s/g, '');
-  const splitedImage = fileName.split('.');
-  const ext = splitedImage[splitedImage.length - 1];
-  if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'gif') {
-    Product.findById(id, (err, productFound) => {
-      if (err) {
-        return handleError(500, req, res, 'Image could not be uploaded');
-      }
-      const imageName = `${splitedImage[0]}-${productFound._id}.${ext}`;
-      if (body.deleteFile) {
-        let newProductImages;
-        if (body.deleteFile instanceof Array) {
-          body.deleteFile.forEach((i) => {
-            newProductImages = productFound.image.filter((p) => {
-              return p !== i;
-            });
-            fs.unlinkSync(`uploads/${i}`);
+  var image;
+  if (req.files !== null) {
+    image = req.files.image;
+  }
+  Product.findById(id, (err, productFound) => {
+    if (err) {
+      return handleError(500, req, res, 'Image could not be uploaded');
+    }
+    if (body.deleteFile) {
+      let arrayToUpdate = deleteFiles(body.deleteFile, productFound)
+        .arrayImages;
+      if (image) {
+        const extResolve = resolveExtension(image, id);
+        if (image instanceof Array) {
+          extResolve.imagesArray.forEach((i) => {
+            arrayToUpdate.push(i);
           });
         } else {
-          newProductImages = productFound.image.filter((p) => {
-            return p !== body.deleteFile;
-          });
-          fs.unlinkSync(`uploads/${body.deleteFile}`);
+          arrayToUpdate.push(extResolve.imageName);
         }
-        const arrayToUpdate = {
-          image: newProductImages,
-        };
-        Product.findByIdAndUpdate(
-          id,
-          arrayToUpdate,
-          {
-            useFindAndModify: false,
-            new: true,
-          },
-          (err, productUpdated) => {
-            if (err) {
-              return handleError(500, req, res);
-            }
-            return handleResponse(200, req, res, {
-              images: newProductImages,
-              product: productUpdated,
-            });
-          }
-        );
       }
-
-      image.mv(`uploads/${imageName}`, (err) => {
-        if (err) {
+      Product.findByIdAndUpdate(
+        id,
+        { image: arrayToUpdate },
+        {
+          useFindAndModify: false,
+          new: true,
+        },
+        (err, productUpdated) => {
+          if (err) {
+            return handleError(500, req, res);
+          }
+          return handleResponse(200, req, res, {
+            remainingImages: arrayToUpdate,
+            deletedFiles: body.deleteFile,
+            product: productUpdated,
+          });
+        }
+      );
+    } else {
+      if (image instanceof Array) {
+        let imagesToUpload = [];
+        const extResolve = resolveExtension(image, id);
+        imagesToUpload.push(extResolve.imagesArray);
+        if (!extResolve.check) {
           return handleError(500, req, res);
         }
-        productFound.image.push(imageName);
-        const arrayToUpdate = {
-          image: productFound.image,
-        };
         Product.findByIdAndUpdate(
           id,
-          arrayToUpdate,
+          { image: extResolve.imagesArray },
           { useFindAndModify: false, new: true },
           (err, productUpdated) => {
             if (err) {
               return handleError(500, req, res);
             }
             return handleResponse(200, req, res, {
-              imageUpload: imageName,
+              images: imagesToUpload,
               product: productUpdated,
             });
           }
         );
-      });
-    });
-  } else {
-    return handleError(500, req, res);
-  }
+      } else {
+        const extResolve = resolveExtension(image, id);
+        if (!extResolve.check) {
+          return handleError(500, req, res);
+        }
+        image.mv(`uploads/${extResolve.imageName}`, (err) => {
+          if (err) {
+            return handleError(500, req, res);
+          }
+          productFound.image.push(extResolve.imageName);
+          const arrayToUpdate = {
+            image: productFound.image,
+          };
+          Product.findByIdAndUpdate(
+            id,
+            arrayToUpdate,
+            { useFindAndModify: false, new: true },
+            (err, productUpdated) => {
+              if (err) {
+                return handleError(500, req, res);
+              }
+              return handleResponse(200, req, res, {
+                imageUpload: imageName,
+                product: productUpdated,
+              });
+            }
+          );
+        });
+      }
+    }
+  });
 };
 
 module.exports = {
