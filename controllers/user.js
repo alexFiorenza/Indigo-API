@@ -26,6 +26,8 @@ const registerUser = (req, res) => {
     'province',
     'municipality',
     'street',
+    'cp',
+    'phone',
   ]);
   const password = body.password;
   const encryptedPassword = bcrypt.hashSync(password, saltRounds);
@@ -67,6 +69,8 @@ const loginUser = (req, res) => {
         'email',
         'province',
         '_id',
+        'cp',
+        'phone',
       ]);
       createToken(payload)
         .then((data) => {
@@ -88,6 +92,8 @@ const updateUser = (req, res) => {
     'municipality',
     'province',
     'street',
+    'cp',
+    'phone',
   ]);
   User.findByIdAndUpdate(
     id,

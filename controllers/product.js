@@ -1,6 +1,8 @@
 const { verifyAdmin, verifyToken } = require('../utils/auth');
 const { handleError, handleResponse } = require('../utils/manageResponse');
+const fs = require('fs');
 const Product = require('../models/product.js');
+const path = require('path');
 const _ = require('underscore');
 /*Get product depending on id*/
 const getProductPerId = (req, res) => {
@@ -25,6 +27,7 @@ const createProduct = (req, res) => {
     'sizes',
     'price',
     'color',
+    'weight',
   ]);
   Product.create(dataToUpdate, (err, dataCreated) => {
     if (err) {
@@ -45,6 +48,7 @@ const updateProduct = (req, res) => {
     'sizes',
     'price',
     'color',
+    'weight',
   ]);
   Product.findByIdAndUpdate(
     id,
@@ -72,9 +76,89 @@ const deleteProduct = (req, res) => {
   });
 };
 
+const uploadImage = (req, res) => {
+  const id = req.params.id;
+  const body = req.body;
+  const image = req.files.image;
+  const fileName = image.name.replace(/\s/g, '');
+  const splitedImage = fileName.split('.');
+  const ext = splitedImage[splitedImage.length - 1];
+  if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'gif') {
+    Product.findById(id, (err, productFound) => {
+      if (err) {
+        return handleError(500, req, res, 'Image could not be uploaded');
+      }
+      const imageName = `${splitedImage[0]}-${productFound._id}.${ext}`;
+      if (body.deleteFile) {
+        let newProductImages;
+        if (body.deleteFile instanceof Array) {
+          body.deleteFile.forEach((i) => {
+            newProductImages = productFound.image.filter((p) => {
+              return p !== i;
+            });
+            fs.unlinkSync(`uploads/${i}`);
+          });
+        } else {
+          newProductImages = productFound.image.filter((p) => {
+            return p !== body.deleteFile;
+          });
+          fs.unlinkSync(`uploads/${body.deleteFile}`);
+        }
+        const arrayToUpdate = {
+          image: newProductImages,
+        };
+        Product.findByIdAndUpdate(
+          id,
+          arrayToUpdate,
+          {
+            useFindAndModify: false,
+            new: true,
+          },
+          (err, productUpdated) => {
+            if (err) {
+              return handleError(500, req, res);
+            }
+            return handleResponse(200, req, res, {
+              images: newProductImages,
+              product: productUpdated,
+            });
+          }
+        );
+      }
+
+      image.mv(`uploads/${imageName}`, (err) => {
+        if (err) {
+          return handleError(500, req, res);
+        }
+        productFound.image.push(imageName);
+        const arrayToUpdate = {
+          image: productFound.image,
+        };
+        Product.findByIdAndUpdate(
+          id,
+          arrayToUpdate,
+          { useFindAndModify: false, new: true },
+          (err, productUpdated) => {
+            if (err) {
+              return handleError(500, req, res);
+            }
+            return handleResponse(200, req, res, {
+              imageUpload: imageName,
+              product: productUpdated,
+            });
+          }
+        );
+      });
+    });
+  } else {
+    return handleError(500, req, res);
+  }
+};
+
 module.exports = {
   getProductPerId,
   createProduct,
   updateProduct,
   deleteProduct,
+  uploadImage,
 };
