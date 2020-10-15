@@ -1,5 +1,7 @@
 const path = require('path');
 const fs = require('fs');
+const { handleResponse } = require('./manageResponse');
+const Product = require('../models/product');
 const resolveExtension = (image, id = null) => {
   if (image instanceof Array) {
     let imagesArray = [];
@@ -73,8 +75,105 @@ const deleteFiles = (files, product) => {
     arrayImages: newProductImages,
   };
 };
+//TODO Add gcp service
+/*Service to upload images*/
+const uploadImage = (id, body, req, res) => {
+  var image;
+  if (req.files !== null) {
+    image = req.files.image;
+  }
+  Product.findById(id, (err, productFound) => {
+    if (err) {
+      return handleError(500, req, res, 'Image could not be uploaded');
+    }
+    if (body.deleteFile) {
+      let arrayToUpdate = deleteFiles(body.deleteFile, productFound)
+        .arrayImages;
+      if (image) {
+        const extResolve = resolveExtension(image, id);
+        if (image instanceof Array) {
+          extResolve.imagesArray.forEach((i) => {
+            arrayToUpdate.push(i);
+          });
+        } else {
+          arrayToUpdate.push(extResolve.imageName);
+        }
+      }
+      Product.findByIdAndUpdate(
+        id,
+        { image: arrayToUpdate },
+        {
+          useFindAndModify: false,
+          new: true,
+        },
+        (err, productUpdated) => {
+          if (err) {
+            return handleError(500, req, res);
+          }
+          return {
+            remainingImages: arrayToUpdate,
+            deletedFiles: body.deleteFile,
+            product: productUpdated,
+          };
+        }
+      );
+    } else {
+      if (image instanceof Array) {
+        let imagesToUpload = [];
+        const extResolve = resolveExtension(image, id);
+        imagesToUpload.push(extResolve.imagesArray);
+        if (!extResolve.check) {
+          return handleError(500, req, res);
+        }
+        Product.findByIdAndUpdate(
+          id,
+          { image: extResolve.imagesArray },
+          { useFindAndModify: false, new: true },
+          (err, productUpdated) => {
+            if (err) {
+              return handleError(500, req, res);
+            }
+            return {
+              images: imagesToUpload,
+              product: productUpdated,
+            };
+          }
+        );
+      } else {
+        const extResolve = resolveExtension(image, id);
+        if (!extResolve.check) {
+          return handleError(500, req, res);
+        }
+        image.mv(`uploads/${extResolve.imageName}`, (err) => {
+          if (err) {
+            return handleError(500, req, res);
+          }
+          productFound.image.push(extResolve.imageName);
+          const arrayToUpdate = {
+            image: productFound.image,
+          };
+          Product.findByIdAndUpdate(
+            id,
+            arrayToUpdate,
+            { useFindAndModify: false, new: true },
+            (err, productUpdated) => {
+              if (err) {
+                return handleError(500, req, res);
+              }
+              return {
+                imageUpload: extResolve.imageName,
+                product: productUpdated,
+              };
+            }
+          );
+        });
+      }
+    }
+  });
+};
 
 module.exports = {
   resolveExtension,
   deleteFiles,
+  uploadImage,
 };

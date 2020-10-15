@@ -12,6 +12,5 @@ router.delete(
   verifyAdmin,
   productController.deleteProduct
 );
-router.post('/upload/:id', verifyToken, productController.uploadImage);
 
 module.exports = router;
