@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const mongoosePaginate = require('mongoose-paginate-v2');
 const productSchema = new mongoose.Schema({
   categories: Array,
   name: { type: String, required: true },
@@ -10,5 +10,5 @@ const productSchema = new mongoose.Schema({
   image: [],
   weight: { type: Number },
 });
-
+productSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model('Product', productSchema);

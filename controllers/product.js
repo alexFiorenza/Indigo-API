@@ -16,7 +16,25 @@ const getProductPerId = (req, res) => {
   });
 };
 /*Get all products and paginate them*/
-const getAllProducts = (req, res) => {};
+const getAllProducts = (req, res) => {
+  const opts = {
+    page: req.params.page,
+  };
+  if (req.query.limit) {
+    Object.assign(opts, { limit: req.query.limit });
+  } else {
+    Object.assign(opts, { limit: 10 });
+  }
+  Product.paginate({}, opts, (err, result) => {
+    if (err) {
+      return handleError(500, req, res);
+    }
+    return handleResponse(200, req, res, {
+      totalPages: result.totalPages,
+      products: result.docs,
+    });
+  });
+};
 /*Create product*/
 const createProduct = (req, res) => {
   const body = req.body;
@@ -33,7 +51,7 @@ const createProduct = (req, res) => {
     if (err) {
       return handleError(500, req, res);
     }
-    if (req.files !== null) {
+    if (req.files !== undefined) {
       uploadImage(dataCreated._id, body, req, res);
       return handleResponse(200, req, res, 'Object succesfully created');
     }
@@ -88,4 +106,5 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
+  getAllProducts,
 };
