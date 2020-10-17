@@ -1,7 +1,5 @@
 # Indigo API
 
-![](https://i.imgur.com/5BS2DHvs.png)
-
 ## Features
 
 - Database: MongoDB
