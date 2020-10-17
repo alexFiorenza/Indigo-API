@@ -9,6 +9,9 @@ const productSchema = new mongoose.Schema({
   color: [{}],
   image: [],
   weight: { type: Number },
+  top: { type: Boolean, default: false },
+  sale: { type: Number, default: 0 },
+  homeView: { type: Boolean, default: false },
 });
 productSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model('Product', productSchema);
