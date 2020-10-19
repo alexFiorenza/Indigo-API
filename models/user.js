@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
   role: { type: String, default: 'user' },
   cp: { type: Number },
   phone: { type: Number },
+  createdAt: { type: String, default: Date.now },
 });
 
 module.exports = mongoose.model('User', userSchema);

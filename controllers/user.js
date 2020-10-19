@@ -28,6 +28,7 @@ const registerUser = (req, res) => {
     'street',
     'cp',
     'phone',
+    'date',
   ]);
   const password = body.password;
   const encryptedPassword = bcrypt.hashSync(password, saltRounds);
@@ -71,6 +72,7 @@ const loginUser = (req, res) => {
         '_id',
         'cp',
         'phone',
+        'date',
       ]);
       createToken(payload)
         .then((data) => {
