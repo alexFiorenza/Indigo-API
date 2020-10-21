@@ -49,6 +49,7 @@ const createProduct = (req, res) => {
     'top',
     'sale',
     'homeView',
+    'stock',
   ]);
   Product.create(dataToUpdate, (err, dataCreated) => {
     if (err) {
@@ -76,6 +77,7 @@ const updateProduct = (req, res) => {
     'top',
     'sale',
     'homeView',
+    'stock',
   ]);
   Product.findByIdAndUpdate(
     id,
