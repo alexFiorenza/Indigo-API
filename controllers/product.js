@@ -4,7 +4,7 @@ const fs = require('fs');
 const Product = require('../models/product.js');
 const path = require('path');
 const _ = require('underscore');
-const { uploadImage } = require('../utils/uploads');
+const { uploadImageProducts } = require('../utils/uploads');
 /*Get product depending on id*/
 const getProductPerId = (req, res) => {
   const id = req.params.id;
@@ -56,7 +56,7 @@ const createProduct = (req, res) => {
       return handleError(500, req, res);
     }
     if (req.files !== undefined) {
-      uploadImage(dataCreated._id, body, req, res);
+      uploadImageProducts(dataCreated._id, body, req, res);
       return handleResponse(200, req, res, 'Object succesfully created');
     }
     return handleResponse(200, req, res, dataCreated);
@@ -88,7 +88,7 @@ const updateProduct = (req, res) => {
         return handleError(500, req, res);
       }
       if (req.files !== null || body.deleteFile !== null) {
-        uploadImage(dataUpdated._id, body, req, res);
+        uploadImageProducts(dataUpdated._id, body, req, res);
         return handleResponse(200, req, res, 'data was succesfully updated');
       }
       return handleResponse(200, req, res, dataUpdated);

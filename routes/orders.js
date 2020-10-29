@@ -6,8 +6,7 @@ const orderController = require('../controllers/orders');
 router.post('/proccess_payment', verifyToken, orderController.processPayment);
 router.put(
   '/update/:id',
-  verifyToken,
-  verifyAdmin,
+  [verifyToken, verifyAdmin],
   orderController.updateOrder
 );
 router.get('/orders', verifyToken, orderController.getAllOrders);

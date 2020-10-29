@@ -13,6 +13,7 @@ require('dotenv').config();
 const userRoutes = require('./routes/user');
 const productRoutes = require('./routes/product');
 const orderRoutes = require('./routes/orders');
+const slideRoutes = require('./routes/slides');
 const PORT = process.env.PORT || 3000;
 let mongoUrl = '';
 if (PORT === 3000) {
@@ -26,10 +27,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
 app.use(fileupload());
+//**Routes**/
 app.use('/public', express.static(path.join(__dirname, 'uploads/')));
 app.use('/api/user', userRoutes);
 app.use('/api/product', productRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/slides', slideRoutes);
 
 //**Connection to Database and server**/
 db(mongoUrl)

@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const { handleResponse } = require('./manageResponse');
 const Product = require('../models/product');
+const Slide = require('../models/slides');
 const resolveExtension = (image, id = null) => {
   if (image instanceof Array) {
     let imagesArray = [];
@@ -76,8 +77,9 @@ const deleteFiles = (files, product) => {
   };
 };
 //TODO Add gcp service
+//TODO Refactor image uploading services
 /*Service to upload images*/
-const uploadImage = (id, body, req, res) => {
+const uploadImageProducts = (id, body, req, res) => {
   var image;
   if (req.files !== null) {
     image = req.files.image;
@@ -172,8 +174,13 @@ const uploadImage = (id, body, req, res) => {
   });
 };
 
+const uploadSingleImageSlide = (id, req, res) => {
+  Slide.findById(id, (err, slideReceived) => {});
+};
+
 module.exports = {
   resolveExtension,
   deleteFiles,
-  uploadImage,
+  uploadImageProducts,
+  uploadSingleImageSlide,
 };
