@@ -7,5 +7,6 @@ router.get('/:id', controller.getSliderPerId);
 router.get('/', controller.getAllSlides);
 router.post('/', [verifyToken, verifyAdmin], controller.createSlide);
 router.put('/:id', [verifyToken, verifyAdmin], controller.updateSlide);
+router.delete('/:id', [verifyToken, verifyAdmin], controller.deleteSlide);
 
 module.exports = router;

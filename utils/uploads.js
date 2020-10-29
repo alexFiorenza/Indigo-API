@@ -1,8 +1,6 @@
-const path = require('path');
 const fs = require('fs');
-const { handleResponse } = require('./manageResponse');
-const Product = require('../models/product');
-const Slide = require('../models/slides');
+const { request, response } = require('express');
+const { handleError, handleResponse } = require('./manageResponse');
 const resolveExtension = (image, id = null) => {
   if (image instanceof Array) {
     let imagesArray = [];
@@ -79,12 +77,13 @@ const deleteFiles = (files, product) => {
 //TODO Add gcp service
 //TODO Refactor image uploading services
 /*Service to upload images*/
-const uploadImageProducts = (id, body, req, res) => {
+const uploadImages = (id, body, req = request, res = response, Model) => {
   var image;
   if (req.files !== null) {
     image = req.files.image;
   }
-  Product.findById(id, (err, productFound) => {
+
+  Model.findById(id, (err, productFound) => {
     if (err) {
       return handleError(500, req, res, 'Image could not be uploaded');
     }
@@ -101,7 +100,7 @@ const uploadImageProducts = (id, body, req, res) => {
           arrayToUpdate.push(extResolve.imageName);
         }
       }
-      Product.findByIdAndUpdate(
+      Model.findByIdAndUpdate(
         id,
         { image: arrayToUpdate },
         {
@@ -127,7 +126,7 @@ const uploadImageProducts = (id, body, req, res) => {
         if (!extResolve.check) {
           return handleError(500, req, res);
         }
-        Product.findByIdAndUpdate(
+        Model.findByIdAndUpdate(
           id,
           { image: extResolve.imagesArray },
           { useFindAndModify: false, new: true },
@@ -146,41 +145,64 @@ const uploadImageProducts = (id, body, req, res) => {
         if (!extResolve.check) {
           return handleError(500, req, res);
         }
-        image.mv(`uploads/${extResolve.imageName}`, (err) => {
-          if (err) {
-            return handleError(500, req, res);
-          }
-          productFound.image.push(extResolve.imageName);
-          const arrayToUpdate = {
-            image: productFound.image,
-          };
-          Product.findByIdAndUpdate(
-            id,
-            arrayToUpdate,
-            { useFindAndModify: false, new: true },
-            (err, productUpdated) => {
-              if (err) {
-                return handleError(500, req, res);
-              }
-              return {
-                imageUpload: extResolve.imageName,
-                product: productUpdated,
-              };
+        productFound.image.push(extResolve.imageName);
+        const arrayToUpdate = {
+          image: productFound.image,
+        };
+        Model.findByIdAndUpdate(
+          id,
+          arrayToUpdate,
+          { useFindAndModify: false, new: true },
+          (err, productUpdated) => {
+            if (err) {
+              return handleError(500, req, res);
             }
-          );
-        });
+            return {
+              imageUpload: extResolve.imageName,
+              product: productUpdated,
+            };
+          }
+        );
       }
     }
   });
 };
+const uploadSingleImg = (id, req = request, res = response, Model) => {
+  var image;
+  if (req.files !== null) {
+    image = req.files.image;
+  } else {
+    return handleError(400, req, res, 'Image not uploaded');
+  }
+  Model.findOne({ _id: id }, async (err, slideFound) => {
+    if (err) {
+      return handleError(500, req, res);
+    }
+    if (slideFound.image !== null) {
+      fs.unlinkSync(`uploads/${slideFound.image}`);
+    }
+    const extResolved = await resolveExtension(image, id);
+    if (!extResolved.check) {
+      return handleError(500, req, res);
+    }
 
-const uploadSingleImageSlide = (id, req, res) => {
-  Slide.findById(id, (err, slideReceived) => {});
+    Model.findByIdAndUpdate(
+      id,
+      { image: extResolved.imageName },
+      { new: true },
+      (err, collectionUploaded) => {
+        if (err) {
+          return handleError(500, req, res);
+        }
+        return collectionUploaded;
+      }
+    );
+  });
 };
 
 module.exports = {
   resolveExtension,
   deleteFiles,
-  uploadImageProducts,
-  uploadSingleImageSlide,
+  uploadImages,
+  uploadSingleImg,
 };
