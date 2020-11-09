@@ -24,11 +24,13 @@ const registerUser = (req, res) => {
     'name',
     'email',
     'province',
-    'municipality',
+    'town',
     'street',
     'cp',
     'phone',
     'date',
+    'numberStreet',
+    'instructions',
   ]);
   const password = body.password;
   const encryptedPassword = bcrypt.hashSync(password, saltRounds);
@@ -63,8 +65,7 @@ const loginUser = (req, res) => {
       }
       const payload = _.pick(userFound, [
         'name',
-        'location',
-        'municipality',
+        'town',
         'street',
         'role',
         'email',
@@ -73,6 +74,8 @@ const loginUser = (req, res) => {
         'cp',
         'phone',
         'date',
+        'numberStreet',
+        'instructions',
       ]);
       createToken(payload)
         .then((data) => {
@@ -91,9 +94,11 @@ const updateUser = (req, res) => {
   const body = req.body;
   const dataToUpdate = _.pick(body, [
     'name',
-    'municipality',
+    'town',
     'province',
     'street',
+    'numberStreet',
+    'instructions',
     'cp',
     'phone',
   ]);

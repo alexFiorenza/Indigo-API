@@ -4,13 +4,12 @@ const productController = require('../controllers/product');
 const { verifyToken, verifyAdmin } = require('../utils/auth');
 
 router.get('/getOne/:id', productController.getProductPerId);
-router.post('/', verifyToken, verifyAdmin, productController.createProduct);
-router.put('/:id', verifyToken, verifyAdmin, productController.updateProduct);
+router.post('/', [verifyToken, verifyAdmin], productController.createProduct);
+router.put('/:id', [verifyToken, verifyAdmin], productController.updateProduct);
 router.get('/:page', productController.getAllProducts);
 router.delete(
   '/:id',
-  verifyToken,
-  verifyAdmin,
+  [verifyToken, verifyAdmin],
   productController.deleteProduct
 );
 
