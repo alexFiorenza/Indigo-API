@@ -54,6 +54,7 @@ const resolveExtension = (image, id = null) => {
     }
   }
 };
+// TODO Check service to delete files
 const deleteFiles = (files, product) => {
   let newProductImages = [];
   if (files instanceof Array) {
