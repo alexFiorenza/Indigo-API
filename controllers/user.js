@@ -20,18 +20,6 @@ const getOneUserPerId = (req, res) => {
 const registerUser = (req, res) => {
   const body = req.body;
   const saltRounds = 10;
-  const data = _.pick(body, [
-    'name',
-    'email',
-    'province',
-    'town',
-    'street',
-    'cp',
-    'phone',
-    'date',
-    'numberStreet',
-    'instructions',
-  ]);
   const password = body.password;
   const encryptedPassword = bcrypt.hashSync(password, saltRounds);
   Object.assign(data, { password: encryptedPassword });

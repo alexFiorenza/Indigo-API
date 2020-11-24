@@ -1,9 +1,12 @@
 const fs = require('fs');
 const { request, response } = require('express');
 const { handleError, handleResponse } = require('./manageResponse');
+const uniqid = require('uniqid');
+const mongoose = require('mongoose');
 const resolveExtension = (image, id = null) => {
   if (image instanceof Array) {
     let imagesArray = [];
+    const uid = uniqid();
     image.forEach((i) => {
       const filename = i.name.replace(/\s/g, '');
       const splitedImage = filename.split('.');
@@ -22,17 +25,20 @@ const resolveExtension = (image, id = null) => {
       } else {
         return {
           check: false,
+          reason: 'Wrong extension',
         };
       }
     });
     return {
       check: true,
-      imagesArray,
+      response: imagesArray,
+      uid,
     };
   } else {
     const fileName = image.name.replace(/\s/g, '');
     const splitedImage = fileName.split('.');
     const ext = splitedImage[splitedImage.length - 1];
+    const uid = uniqid();
     if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'gif') {
       const imageName = `${splitedImage[0]}-${id}.${ext}`;
       image.mv(`uploads/${imageName}`, (err) => {
@@ -45,128 +51,72 @@ const resolveExtension = (image, id = null) => {
       });
       return {
         check: true,
-        imageName,
+        response: imageName,
+        uid,
       };
     } else {
       return {
         check: false,
+        reason: 'Wrong extension',
       };
     }
   }
 };
 // TODO Check service to delete files
-const deleteFiles = (files, product) => {
-  let newProductImages = [];
-  if (files instanceof Array) {
-    files.forEach((i) => {
-      newProductImages = product.image.filter((p) => {
-        return p !== i;
-      });
-      fs.unlinkSync(`uploads/${i}`);
-    });
+const deleteFiles = async (file, id, Model = mongoose.Model, imageId) => {
+  if (file instanceof Array) {
+    return handleError(
+      500,
+      req,
+      res,
+      "You can't delete more than 1 file per request"
+    );
   } else {
-    newProductImages = product.image.filter((p) => {
-      return p !== files;
-    });
     fs.unlinkSync(`uploads/${files}`);
+    Model.findOneAndUpdate(
+      { _id: id },
+      { $pull: { images: { uid: imageId } } },
+      (err, response) => {
+        if (err) {
+          return handleError(500, req, res);
+        }
+        return handleResponse(200, req, res, {
+          message: `File (${file}) was succesfully deleted in store service and database`,
+        });
+      }
+    );
   }
-  return {
-    status: true,
-    arrayImages: newProductImages,
-  };
 };
 //TODO Add gcp service
 //TODO Refactor image uploading services
 /*Service to upload images*/
-const uploadImages = (id, body, req = request, res = response, Model) => {
-  var image;
-  if (req.files !== null) {
-    image = req.files.image;
+const uploadImages = (
+  id,
+  body,
+  req = request,
+  res = response,
+  Model = mongoose.Model
+) => {
+  var image = req.files.image;
+  if (body.deleteFiles) {
+    deleteFiles(body.deleteFiles);
   }
-
-  Model.findById(id, (err, productFound) => {
-    if (err) {
-      return handleError(500, req, res, 'Image could not be uploaded');
-    }
-    if (body.deleteFile) {
-      let arrayToUpdate = deleteFiles(body.deleteFile, productFound)
-        .arrayImages;
-      if (image) {
-        const extResolve = resolveExtension(image, id);
-        if (image instanceof Array) {
-          extResolve.imagesArray.forEach((i) => {
-            arrayToUpdate.push(i);
-          });
-        } else {
-          arrayToUpdate.push(extResolve.imageName);
-        }
-      }
-      Model.findByIdAndUpdate(
-        id,
-        { image: arrayToUpdate },
-        {
-          useFindAndModify: false,
-          new: true,
-        },
-        (err, productUpdated) => {
-          if (err) {
-            return handleError(500, req, res);
-          }
-          return {
-            remainingImages: arrayToUpdate,
-            deletedFiles: body.deleteFile,
-            product: productUpdated,
-          };
-        }
-      );
-    } else {
-      if (image instanceof Array) {
-        let imagesToUpload = [];
-        const extResolve = resolveExtension(image, id);
-        imagesToUpload.push(extResolve.imagesArray);
-        if (!extResolve.check) {
-          return handleError(500, req, res);
-        }
-        Model.findByIdAndUpdate(
-          id,
-          { image: extResolve.imagesArray },
-          { useFindAndModify: false, new: true },
-          (err, productUpdated) => {
-            if (err) {
-              return handleError(500, req, res);
-            }
-            return {
-              images: imagesToUpload,
-              product: productUpdated,
-            };
-          }
-        );
-      } else {
-        const extResolve = resolveExtension(image, id);
-        if (!extResolve.check) {
-          return handleError(500, req, res);
-        }
-        productFound.image.push(extResolve.imageName);
-        const arrayToUpdate = {
-          image: productFound.image,
-        };
-        Model.findByIdAndUpdate(
-          id,
-          arrayToUpdate,
-          { useFindAndModify: false, new: true },
-          (err, productUpdated) => {
-            if (err) {
-              return handleError(500, req, res);
-            }
-            return {
-              imageUpload: extResolve.imageName,
-              product: productUpdated,
-            };
-          }
-        );
-      }
-    }
-  });
+  let imagesToUpload = [];
+  const { response: imageName, uid } = resolveExtension(image, id);
+  let obj = {
+    uid,
+  };
+  if (imageName instanceof Array) {
+    Object.assign(obj, { image: [] });
+    imageName.forEach((i) => {
+      obj.image.push(i);
+    });
+  } else {
+    Object.assign(obj, {
+      image: imageName,
+    });
+  }
+  Model.findOneAndUpdate({ _id: id });
 };
 const uploadSingleImg = (id, req = request, res = response, Model) => {
   var image;

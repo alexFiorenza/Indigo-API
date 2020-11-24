@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
   phone: { type: Number },
   building: { type: Boolean, default: false },
   createdAt: { type: String, default: Date.now },
+  favorites: [{}],
 });
 
 module.exports = mongoose.model('User', userSchema);
