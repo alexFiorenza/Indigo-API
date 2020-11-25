@@ -66,6 +66,7 @@ const updateProduct = (req, res) => {
   );
 };
 /*Delete a product*/
+//TODO Add delete image in service
 const deleteProduct = (req, res) => {
   const id = req.params.id;
   Product.findByIdAndDelete(id, (err, documentDeleted) => {

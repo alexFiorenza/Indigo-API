@@ -3,7 +3,7 @@ const { handleError, handleResponse } = require('../utils/manageResponse');
 const { request, response } = require('express');
 const _ = require('underscore');
 const fs = require('fs');
-const { uploadSingleImg } = require('../utils/uploads');
+// const { uploadSingleImg } = require('../utils/uploads');
 const getSliderPerId = (req = request, res) => {
   const id = req.params.id;
   Slide.findById(id, (err, slideReceived) => {
@@ -36,7 +36,7 @@ const createSlide = (req = request, res = response) => {
       return handleError(500, req, res);
     }
     //TODO implement image uploading sliders
-    uploadSingleImg(slideCreated._id, req, res, Slide);
+    // uploadSingleImg(slideCreated._id, req, res, Slide);
     return handleResponse(200, req, res, slideCreated);
   });
 };
@@ -59,7 +59,7 @@ const updateSlide = (req, res) => {
       if (err) {
         return handleError(500, req, res);
       }
-      uploadSingleImg(slideUpdated._id, req, res, Slide);
+      // uploadSingleImg(slideUpdated._id, req, res, Slide);
       return handleResponse(200, req, res, slideUpdated);
     }
   );
