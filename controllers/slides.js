@@ -3,7 +3,7 @@ const { handleError, handleResponse } = require('../utils/manageResponse');
 const { request, response } = require('express');
 const _ = require('underscore');
 const fs = require('fs');
-// const { uploadSingleImg } = require('../utils/uploads');
+const { manageImages } = require('../utils/uploads');
 const getSliderPerId = (req = request, res) => {
   const id = req.params.id;
   Slide.findById(id, (err, slideReceived) => {
@@ -31,12 +31,21 @@ const createSlide = (req = request, res = response) => {
     'btnDirection',
     'wordsColor',
   ]);
-  Slide.create(dataPicked, (err, slideCreated) => {
+  Slide.create(dataPicked, async (err, slideCreated) => {
     if (err) {
       return handleError(500, req, res);
     }
-    //TODO implement image uploading sliders
-    // uploadSingleImg(slideCreated._id, req, res, Slide);
+    if (req.files !== null) {
+      try {
+        const img = await manageImages(slideCreated._id, req, res, Slide);
+      } catch (error) {
+        return handleError(500, req, res, error);
+      }
+      return handleResponse(200, req, res, {
+        message: 'Slide succesfully created',
+        response: img,
+      });
+    }
     return handleResponse(200, req, res, slideCreated);
   });
 };
@@ -55,11 +64,28 @@ const updateSlide = (req, res) => {
     id,
     dataPicked,
     { new: true, useFindAndModify: false },
-    (err, slideUpdated) => {
+    async (err, slideUpdated) => {
       if (err) {
         return handleError(500, req, res);
       }
-      // uploadSingleImg(slideUpdated._id, req, res, Slide);
+      if (req.files !== null) {
+        try {
+          const slideImg = await manageImages(
+            slideUpdated._id,
+            body,
+            req,
+            res,
+            Slide
+          );
+        } catch (error) {
+          return handleError(500, req, res, error);
+        }
+
+        return handleResponse(200, req, res, {
+          message: 'Slide was succesfully updated',
+          response: slideImg,
+        });
+      }
       return handleResponse(200, req, res, slideUpdated);
     }
   );

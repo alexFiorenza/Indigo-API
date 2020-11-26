@@ -1,6 +1,5 @@
 const fs = require('fs');
 const { request, response } = require('express');
-const { handleError, handleResponse } = require('./manageResponse');
 const uniqid = require('uniqid');
 const mongoose = require('mongoose');
 const resolveExtension = (image, id = null) => {
@@ -66,42 +65,43 @@ const resolveExtension = (image, id = null) => {
     }
   }
 };
-const deleteFiles = async (
-  file,
-  id,
-  Model = mongoose.Model,
-  imageId,
-  req,
-  res
-) => {
-  console.log(file);
+const deleteFiles = (file, id, Model = mongoose.Model, imageId) => {
   if (file instanceof Array) {
-    return handleError(
-      500,
-      req,
-      res,
-      "You can't delete more than 1 file per request"
-    );
+    return {
+      status: 500,
+      message: "You can't delete more than 1 file per request",
+    };
   } else {
-    fs.unlinkSync(`uploads/${file}`);
-    Model.findByIdAndUpdate(
-      { _id: id },
-      { $pull: { images: { uid: imageId } } },
-      (err, response) => {
-        if (err) {
-          return handleError(500, req, res);
+    return new Promise((resolve, reject) => {
+      fs.unlinkSync(`uploads/${file}`);
+      Model.findByIdAndUpdate(
+        { _id: id },
+        { $pull: { images: { uid: imageId } } },
+        {
+          useFindAndModify: false,
+          new: true,
         }
-        return handleResponse(200, req, res, {
-          message: `File (${file}) was succesfully deleted in store service and database`,
+      )
+        .then((response) => {
+          resolve({
+            status: 200,
+            message: `File (${file}) was succesfully deleted in store service and database`,
+            response,
+          });
+        })
+        .catch((err) => {
+          reject({
+            status: 500,
+            message: `Error while trying to find: ${file}`,
+            err,
+          });
         });
-      }
-    );
+    });
   }
 };
 //TODO Add gcp service
-//TODO Refactor image uploading services
-/*Service to upload images*/
-const uploadImages = (
+/*Service to upload | delete  images*/
+const manageImages = async (
   id,
   body,
   req = request,
@@ -110,21 +110,37 @@ const uploadImages = (
 ) => {
   if (body.deleteFile) {
     let uidImg;
-    Model.findOne(
-      { 'images.image': body.deleteFile },
-      (err, { images: imagesArray }) => {
-        if (err) {
-          return handleError(500, req, res);
+    try {
+      let deletedFiles;
+      const { images: imagesArray } = await Model.findOne({
+        'images.image': body.deleteFile,
+      });
+      imagesArray.forEach((i) => {
+        if (i.image === body.deleteFile) {
+          uidImg = i.uid;
         }
-        imagesArray.forEach((i) => {
-          if (i.image === body.deleteFile) {
-            uidImg = i.uid;
-          }
+      });
+      deleteFiles(body.deleteFile, id, Model, uidImg)
+        .then((resp) => {
+          deletedFiles = resp;
+        })
+        .catch((error) => {
+          console.error(error);
         });
-        deleteFiles(body.deleteFile, id, Model, uidImg, req, res);
-      }
-    );
-  } else if (req.files !== null) {
+      return {
+        status: 200,
+        message: 'Files succesfully deleted',
+        response: `File deleted: ${body.deleteFile}`,
+      };
+    } catch (error) {
+      return {
+        status: 500,
+        message: 'Unexpected error',
+        error,
+      };
+    }
+  }
+  if (req.files !== null) {
     var image = req.files.image;
     const { response: imageName, uid } = resolveExtension(image, id);
     let obj;
@@ -136,25 +152,37 @@ const uploadImages = (
         image: imageName,
       };
     }
-    Model.findByIdAndUpdate(
-      { _id: id },
-      { $push: { images: obj } },
-      {
-        useFindAndModify: false,
-        new: true,
-        multi: true,
-      },
-      (err, productUpdated) => {
-        if (err) {
-          return handleError(500, req, res);
+    try {
+      const productUpdated = await Model.findByIdAndUpdate(
+        { _id: id },
+        { $push: { images: obj } },
+        {
+          useFindAndModify: false,
+          new: true,
+          multi: true,
         }
-        return handleResponse(200, req, res, productUpdated);
-      }
-    );
+      );
+      return {
+        status: 200,
+        response: productUpdated,
+      };
+    } catch (error) {
+      return {
+        status: 500,
+        message: 'Unexpected error',
+        error,
+      };
+    }
+  }
+  if (!body.deleteFile && !req.files) {
+    return {
+      status: 400,
+      message: 'Files to upload or files to delete were not supplied',
+    };
   }
 };
 module.exports = {
   resolveExtension,
   deleteFiles,
-  uploadImages,
+  manageImages,
 };

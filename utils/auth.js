@@ -19,7 +19,6 @@ const verifyToken = (req, res, next) => {
 };
 const verifyAdmin = (req, res, next) => {
   const user_role = req.user.role;
-  console.log(user_role);
   if (user_role === 'admin') {
     return next();
   } else {

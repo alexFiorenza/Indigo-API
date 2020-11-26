@@ -1,6 +1,7 @@
 const { handleError, handleResponse } = require('../utils/manageResponse');
 const Product = require('../models/product.js');
-const { uploadImages } = require('../utils/uploads');
+const { manageImages } = require('../utils/uploads');
+const fs = require('fs');
 /*Get product depending on id*/
 const getProductPerId = (req, res) => {
   const id = req.params.id;
@@ -39,7 +40,7 @@ const createProduct = (req, res) => {
       return handleError(500, req, res);
     }
     if (req.files !== undefined) {
-      uploadImages(dataCreated._id, body, req, res, Product);
+      manageImages(dataCreated._id, body, req, res, Product);
       return handleResponse(200, req, res, 'Object succesfully created');
     }
     return handleResponse(200, req, res, dataCreated);
@@ -53,29 +54,53 @@ const updateProduct = (req, res) => {
     id,
     body,
     { new: true, useFindAndModify: false },
-    (err, dataUpdated) => {
+    async (err, dataUpdated) => {
       if (err) {
         return handleError(500, req, res);
       }
       if (req.files !== null || body.deleteFile !== null) {
-        uploadImages(dataUpdated._id, body, req, res, Product);
-        return handleResponse(200, req, res, 'data was succesfully updated');
+        try {
+          const images = await manageImages(
+            dataUpdated._id,
+            body,
+            req,
+            res,
+            Product
+          );
+          if (images.status === 200) {
+            return handleResponse(200, req, res, {
+              message: 'Data succesfully updated',
+              response: images.response,
+            });
+          }
+        } catch (error) {
+          return handleError(500, req, res, error);
+        }
       }
       return handleResponse(200, req, res, dataUpdated);
     }
   );
 };
 /*Delete a product*/
-//TODO Add delete image in service
 const deleteProduct = (req, res) => {
   const id = req.params.id;
-  Product.findByIdAndDelete(id, (err, documentDeleted) => {
-    if (err) {
+  Product.findById(id, (err, productFound) => {
+    if (err | (productFound.length < 0)) {
       return handleError(500, req, res);
     }
-    return handleResponse(200, req, res, {
-      message: 'Product deleted correctly',
-      product: documentDeleted,
+    if (productFound.images.length > 0) {
+      productFound.images.forEach((i) => {
+        fs.unlinkSync(`uploads/${i.image}`);
+      });
+    }
+    Product.findByIdAndDelete(id, (err, documentDeleted) => {
+      if (err) {
+        return handleError(500, req, res);
+      }
+      return handleResponse(200, req, res, {
+        message: 'Product deleted correctly',
+        product: documentDeleted,
+      });
     });
   });
 };
