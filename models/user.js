@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema({
   street: { type: String, required: true },
   numberStreet: { type: String, required: true },
   role: { type: String, default: 'user' },
-  instructions: { type: String },
   cp: { type: Number },
   phone: { type: Number },
   building: { type: Boolean, default: false },

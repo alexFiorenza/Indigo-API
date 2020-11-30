@@ -4,6 +4,7 @@ const User = require('../models/user');
 const { handleError, handleResponse } = require('../utils/manageResponse');
 const { createToken } = require('../utils/auth');
 const manageResponse = require('../utils/manageResponse');
+const { request } = require('express');
 /*Get one user per id*/
 const getOneUserPerId = (req, res) => {
   const { id } = req.params;
@@ -76,6 +77,54 @@ const loginUser = (req, res) => {
     });
   });
 };
+/*Push product to favorites array*/
+const manageFavorites = (req, res) => {
+  const product = _.pick(body, ['product']);
+  const user = req.user;
+  User.findByIdAndUpdate(
+    user._id,
+    { $push: { favorites: product } },
+    {
+      new: true,
+    },
+    (err, productUpdated) => {
+      if (err) {
+        return handleError(500, req, res);
+      }
+      return handleResponse(200, req, res, productUpdated);
+    }
+  );
+};
+/*Delete a favorite product*/
+const deleteFavorite = (req = request, res) => {
+  const productToDelete = _.pick(req.body, ['product']);
+  const user = req.user;
+  User.findByIdAndUpdate(
+    user._id,
+    {
+      $pull: { favorites: { _id: productToDelete._id } },
+    },
+    (err, productFound) => {
+      if (err) {
+        return handleError(500, req, res);
+      }
+      return handleResponse(200, req, res, productFound);
+    }
+  );
+};
+/*Controller to get favorites*/
+const getFavorites = (req = request, res) => {
+  const id = req.params.id;
+  const user = req.user._id;
+  User.findById(user._id)
+    .select('favorites', '-_id')
+    .exec((err, favoritesFound) => {
+      if (err) {
+        return handleError(500, req, res);
+      }
+      return handleResponse(200, req, res, favoritesFound);
+    });
+};
 /* Update user*/
 const updateUser = (req, res) => {
   const id = req.params.id;
@@ -120,4 +169,7 @@ module.exports = {
   loginUser,
   updateUser,
   deleteUser,
+  manageFavorites,
+  getFavorites,
+  deleteFavorite,
 };

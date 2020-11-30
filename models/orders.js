@@ -11,6 +11,7 @@ const ordersSchema = new mongoose.Schema({
   paymentMethod: { type: Object },
   deliveryMethod: { type: String, required: true },
   trackingId: { type: String, required: true, default: uuidv4() },
+  instructions: { type: String },
 });
 
 module.exports = mongoose.model('Order', ordersSchema);
