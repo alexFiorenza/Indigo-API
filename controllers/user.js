@@ -23,15 +23,15 @@ const registerUser = (req, res) => {
   const saltRounds = 10;
   const password = body.password;
   const encryptedPassword = bcrypt.hashSync(password, saltRounds);
-  Object.assign(data, { password: encryptedPassword });
-  User.find({ email: data.email }, (err, userFound) => {
+  Object.assign(body, { password: encryptedPassword });
+  User.find({ email: body.email }, (err, userFound) => {
     if (err) {
       return handleError(500, req, res);
     }
     if (userFound.length > 0) {
       return handleError(500, req, res, 'User already exists');
     }
-    User.create(data, (err) => {
+    User.create(body, (err) => {
       if (err) {
         return handleError(500, req, res);
       }
@@ -79,13 +79,14 @@ const loginUser = (req, res) => {
 };
 /*Push product to favorites array*/
 const manageFavorites = (req, res) => {
-  const product = _.pick(body, ['product']);
+  const product = _.pick(req.body, ['product']);
   const user = req.user;
   User.findByIdAndUpdate(
     user._id,
     { $push: { favorites: product } },
     {
       new: true,
+      useFindAndModify: false,
     },
     (err, productUpdated) => {
       if (err) {
@@ -104,6 +105,9 @@ const deleteFavorite = (req = request, res) => {
     {
       $pull: { favorites: { _id: productToDelete._id } },
     },
+    {
+      useFindAndModify: false,
+    },
     (err, productFound) => {
       if (err) {
         return handleError(500, req, res);
@@ -114,10 +118,9 @@ const deleteFavorite = (req = request, res) => {
 };
 /*Controller to get favorites*/
 const getFavorites = (req = request, res) => {
-  const id = req.params.id;
   const user = req.user._id;
-  User.findById(user._id)
-    .select('favorites', '-_id')
+  User.findById(user)
+    .select('favorites -_id')
     .exec((err, favoritesFound) => {
       if (err) {
         return handleError(500, req, res);
