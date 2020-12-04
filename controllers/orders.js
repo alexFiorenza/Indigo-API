@@ -12,44 +12,52 @@ const processPayment = (req, res) => {
   const emailUser = req.user.email;
   const payment_data = {
     transaction_amount: Number(body.price),
-    token: body.token,
+    token: body.orderInfo.token,
     installments: Number(body.installments),
     payment_method_id: body.paymentMethodId,
     payer: {
-      email: emailUser,
+      email: 'alexxdfiorenza@gmail.com',
+      identification: {
+        type: body.orderInfo.docType,
+        number: req.body.docNumber,
+      },
     },
   };
+  //MP user
+  // {"id":682470188,"nickname":"TESTKR2J39CU","password":"qatest5363","site_status":"active","email":"test_user_17045136@testuser.com"}
   mercadopago.payment
     .save(payment_data)
-    .then((resp) => {
+    .then((response) => {
       const dataToSave = {
         price: Number(body.price),
-        products: body.products,
+        products: body.orderInfo.products,
         user: req.user,
         date: body.date,
-        delayTime: body.delayTime,
+        delayTime: body.orderInfo.delayTime,
         status: 'activo',
         paid: true,
-        deliveryMethod: body.delivery,
+        deliveryMethod: body.orderInfo.delivery,
         paymentMethod: {
-          payment_method: resp.body.payment_method_id,
-          payment_type: resp.body.payment_type_id,
+          payment_method: response.body.payment_method_id,
+          payment_type: response.body.payment_type_id,
         },
       };
+
       Order.create(dataToSave, (err, orderCreated) => {
         if (err) {
           return handleError(500, req, res);
         }
-        return handleResponse(resp.status, req, res, {
-          status: resp.body.status,
-          status_detail: resp.body.status_detail,
-          id: resp.body.id,
+        return handleResponse(response.status, req, res, {
+          status: response.body.status,
+          status_detail: response.body.status_detail,
+          id: response.body.id,
           order: orderCreated,
         });
       });
     })
     .catch((err) => {
-      return handleError(resp.status, req, res);
+      console.log(err);
+      return handleError(500, req, res, err);
     });
 };
 

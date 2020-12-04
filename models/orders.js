@@ -5,7 +5,7 @@ const ordersSchema = new mongoose.Schema({
   products: [{}],
   user: { type: Object },
   date: { type: String },
-  delayTime: { type: Number },
+  delayTime: { type: String },
   status: { type: String },
   paid: { type: Boolean, default: false },
   paymentMethod: { type: Object },
