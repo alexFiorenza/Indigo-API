@@ -2,6 +2,7 @@ const Order = require('../models/orders');
 const _ = require('underscore');
 const { handleError, handleResponse } = require('../utils/manageResponse');
 const mercadopago = require('mercadopago');
+const { request } = require('express');
 
 /*Set mp accessToken*/
 mercadopago.configurations.setAccessToken(process.env.ACCESS_TOKEN_MP);
@@ -130,10 +131,21 @@ const getOrderId = (req, res) => {
     return handleResponse(200, req, res, orderFound);
   });
 };
-
+const getOrderPerUser = (req = request, res) => {
+  const userId = req.params.id;
+  console.log(userId);
+  Order.find({ 'user._id': userId }, (err, ordersFound) => {
+    if (err) {
+      return handleError(500, req, res);
+    }
+    console.log(ordersFound);
+    return handleResponse(200, req, res, ordersFound);
+  });
+};
 module.exports = {
   processPayment,
   getAllOrders,
   updateOrder,
   getOrderId,
+  getOrderPerUser,
 };

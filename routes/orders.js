@@ -11,5 +11,5 @@ router.put(
 );
 router.get('/orders', verifyToken, orderController.getAllOrders);
 router.get('/order/:id', verifyToken, orderController.getOrderId);
-
+router.get('/userOrder/:id', verifyToken, orderController.getOrderPerUser);
 module.exports = router;
