@@ -49,10 +49,19 @@ const createProduct = (req, res) => {
 /*Update product*/
 const updateProduct = (req, res) => {
   const body = req.body;
+  const parsedColor = JSON.parse(body.color);
+  const parsedCategories = JSON.parse(body.categories);
+  delete body.color;
+  delete body.categories;
+  const dataToSend = {
+    ...body,
+    color: parsedColor,
+    categories: parsedCategories,
+  };
   const id = req.params.id;
   Product.findByIdAndUpdate(
     id,
-    body,
+    dataToSend,
     { new: true, useFindAndModify: false },
     async (err, dataUpdated) => {
       if (err) {
