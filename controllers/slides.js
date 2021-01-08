@@ -37,14 +37,14 @@ const createSlide = (req = request, res = response) => {
     }
     if (req.files !== null) {
       try {
-        const img = await manageImages(slideCreated._id, req, res, Slide);
+        const img = await manageImages(slideCreated._id, body, req, res, Slide);
+        return handleResponse(200, req, res, {
+          message: 'Slide succesfully created',
+          response: img,
+        });
       } catch (error) {
         return handleError(500, req, res, error);
       }
-      return handleResponse(200, req, res, {
-        message: 'Slide succesfully created',
-        response: img,
-      });
     }
     return handleResponse(200, req, res, slideCreated);
   });
@@ -77,14 +77,13 @@ const updateSlide = (req, res) => {
             res,
             Slide
           );
+          return handleResponse(200, req, res, {
+            message: 'Slide was succesfully updated',
+            response: slideImg,
+          });
         } catch (error) {
           return handleError(500, req, res, error);
         }
-
-        return handleResponse(200, req, res, {
-          message: 'Slide was succesfully updated',
-          response: slideImg,
-        });
       }
       return handleResponse(200, req, res, slideUpdated);
     }

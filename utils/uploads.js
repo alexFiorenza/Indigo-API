@@ -127,11 +127,6 @@ const manageImages = async (
         .catch((error) => {
           console.error(error);
         });
-      return {
-        status: 200,
-        message: 'Files succesfully deleted',
-        response: `File deleted: ${body.deleteFile}`,
-      };
     } catch (error) {
       return {
         status: 500,
@@ -162,6 +157,7 @@ const manageImages = async (
           multi: true,
         }
       );
+      console.log(productUpdated);
       return {
         status: 200,
         response: productUpdated,

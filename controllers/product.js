@@ -34,8 +34,18 @@ const getAllProducts = (req, res) => {
 };
 /*Create product*/
 const createProduct = (req, res) => {
-  const dataToCreate = req.body;
-  Product.create(dataToCreate, (err, dataCreated) => {
+  const { body } = req;
+  let dataToSend = {
+    ...body,
+  };
+  if (body.color) {
+    const parsedColor = JSON.parse(body.color);
+    delete body.color;
+    Object.assign(dataToSend, {
+      color: parsedColor,
+    });
+  }
+  Product.create(dataToSend, (err, dataCreated) => {
     if (err) {
       return handleError(500, req, res);
     }
@@ -49,15 +59,19 @@ const createProduct = (req, res) => {
 /*Update product*/
 const updateProduct = (req, res) => {
   const body = req.body;
-  const parsedColor = JSON.parse(body.color);
-  const parsedCategories = JSON.parse(body.categories);
-  delete body.color;
-  delete body.categories;
-  const dataToSend = {
+  let dataToSend = {
     ...body,
-    color: parsedColor,
-    categories: parsedCategories,
   };
+  if (body.color || body.categories) {
+    const parsedColor = JSON.parse(body.color);
+    const parsedCategories = JSON.parse(body.categories);
+    delete body.color;
+    delete body.categories;
+    Object.assign(dataToSend, {
+      color: parsedColor,
+      categories: parsedCategories,
+    });
+  }
   const id = req.params.id;
   Product.findByIdAndUpdate(
     id,
