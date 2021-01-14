@@ -2,6 +2,7 @@ const { handleError, handleResponse } = require('../utils/manageResponse');
 const Product = require('../models/product.js');
 const { manageImages } = require('../utils/uploads');
 const fs = require('fs');
+const { request } = require('express');
 /*Get product depending on id*/
 const getProductPerId = (req, res) => {
   const id = req.params.id;
@@ -127,11 +128,20 @@ const deleteProduct = (req, res) => {
     });
   });
 };
-
+/*Get home view products*/
+const homeViewProducts = (req = request, res) => {
+  Product.find({ homeView: true }, (err, productsFound) => {
+    if (err) {
+      return handleError(500, req, res);
+    }
+    return handleResponse(200, req, res, productsFound);
+  });
+};
 module.exports = {
   getProductPerId,
   createProduct,
   updateProduct,
   deleteProduct,
   getAllProducts,
+  homeViewProducts,
 };

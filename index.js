@@ -14,6 +14,7 @@ const userRoutes = require('./routes/user');
 const productRoutes = require('./routes/product');
 const orderRoutes = require('./routes/orders');
 const slideRoutes = require('./routes/slides');
+const categoryRoutes = require('./routes/categories');
 const PORT = process.env.PORT || 3000;
 let mongoUrl = '';
 if (PORT === 3000) {
@@ -33,7 +34,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/product', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/slides', slideRoutes);
-
+app.use('/api/categories', categoryRoutes);
 //**Connection to Database and server**/
 db(mongoUrl)
   .then((resp) => {

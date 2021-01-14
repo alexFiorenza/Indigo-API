@@ -12,6 +12,7 @@ const productSchema = new mongoose.Schema({
   sale: { type: Number, default: 0 },
   homeView: { type: Boolean, default: false },
   stock: { type: Boolean, default: true },
+  categories: [{}],
 });
 productSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model('Product', productSchema);
