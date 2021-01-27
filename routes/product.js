@@ -9,6 +9,7 @@ router.get(
   [verifyToken, verifyAdmin],
   productController.homeViewProducts
 );
+router.get('/filter/:page', productController.filterProducts);
 router.post('/', [verifyToken, verifyAdmin], productController.createProduct);
 router.put('/:id', [verifyToken, verifyAdmin], productController.updateProduct);
 router.get('/:page', productController.getAllProducts);

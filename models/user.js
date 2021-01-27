@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const moment = require('moment');
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
@@ -11,8 +11,8 @@ const userSchema = new mongoose.Schema({
   role: { type: String, default: 'user' },
   cp: { type: Number },
   phone: { type: Number },
-  building: { type: Boolean, default: false },
-  createdAt: { type: String, default: Date.now },
+  building: { type: String },
+  createdAt: { type: String, default: new Date() },
   favorites: [{}],
 });
 userSchema.methods.toJSON = function () {

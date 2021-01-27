@@ -24,19 +24,20 @@ const registerUser = (req, res) => {
   const password = body.password;
   const encryptedPassword = bcrypt.hashSync(password, saltRounds);
   Object.assign(body, { password: encryptedPassword });
-  User.find({ email: body.email }, (err, userFound) => {
+  User.find({ email: body.email }, async (err, userFound) => {
     if (err) {
       return handleError(500, req, res);
     }
     if (userFound.length > 0) {
       return handleError(500, req, res, 'User already exists');
     }
-    User.create(body, (err) => {
-      if (err) {
-        return handleError(500, req, res);
-      }
-      return handleResponse(200, req, res, data);
-    });
+    const userDb = new User(body);
+    const value = await userDb.save();
+    if (value) {
+      return handleResponse(200, req, res, value);
+    } else {
+      return handleError(500, req, res);
+    }
   });
 };
 /*Login user*/

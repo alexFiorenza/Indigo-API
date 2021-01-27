@@ -12,6 +12,7 @@ const ordersSchema = new mongoose.Schema({
   deliveryMethod: { type: String, required: true },
   trackingId: { type: String, required: true, default: uuidv4() },
   instructions: { type: String },
+  createdAt: { type: String, default: new Date() },
 });
 
 module.exports = mongoose.model('Order', ordersSchema);

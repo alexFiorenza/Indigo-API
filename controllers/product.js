@@ -137,6 +137,35 @@ const homeViewProducts = (req = request, res) => {
     return handleResponse(200, req, res, productsFound);
   });
 };
+/*Filter products*/
+const filterProducts = (req = request, res) => {
+  const opts = {
+    page: req.params.page,
+  };
+  if (req.query.limit) {
+    Object.assign(opts, { limit: req.query.limit });
+  } else {
+    Object.assign(opts, { limit: 10 });
+  }
+  const category = req.query.category;
+  const subcategory = req.query.subcategory;
+
+  Product.paginate(
+    {
+      $and: [
+        { 'categories.name': category },
+        { 'categories.subcategories.name': subcategory },
+      ],
+    },
+    opts,
+    (err, productsFound) => {
+      if (err) {
+        return handleError(500, req, res);
+      }
+      return handleResponse(200, req, res, productsFound.docs);
+    }
+  );
+};
 module.exports = {
   getProductPerId,
   createProduct,
@@ -144,4 +173,5 @@ module.exports = {
   deleteProduct,
   getAllProducts,
   homeViewProducts,
+  filterProducts,
 };

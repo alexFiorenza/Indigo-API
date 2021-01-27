@@ -1,3 +1,5 @@
+const { request, response } = require('express');
+
 const handleError = (status, req, res, message = 'Unexpected error') => {
   if (status === 500) {
     return res.status(status).json({ status: false, message });
@@ -5,7 +7,7 @@ const handleError = (status, req, res, message = 'Unexpected error') => {
     return res.status(status).json({ status: false, message });
   }
 };
-const handleResponse = (status, req, res, data) => {
+const handleResponse = (status, req = request, res = response, data) => {
   return res.status(status).json({ status: true, response: data });
 };
 

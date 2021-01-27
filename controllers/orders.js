@@ -3,7 +3,7 @@ const _ = require('underscore');
 const { handleError, handleResponse } = require('../utils/manageResponse');
 const mercadopago = require('mercadopago');
 const { request } = require('express');
-
+const axios = require('axios').default;
 /*Set mp accessToken*/
 mercadopago.configurations.setAccessToken(process.env.ACCESS_TOKEN_MP);
 
@@ -142,10 +142,37 @@ const getOrderPerUser = (req = request, res) => {
     return handleResponse(200, req, res, ordersFound);
   });
 };
+const andreaniLogin = (req = request, res) => {
+  const user_password = `${process.env.user_andreani}:${process.env.password_andreani}`;
+  const url = process.env.andreani_url;
+  const base64 = Buffer.from(user_password).toString('base64');
+  const opts = {
+    headers: {
+      Authorization: `Basic ${base64}`,
+    },
+  };
+  if (url) {
+    axios
+      .get(`${url}/login`, opts)
+      .then(function (response) {
+        return handleResponse(200, req, res, {
+          authToken: response.headers['x-authorization-token'],
+        });
+      })
+      .catch((err) => {
+        if (err) {
+          return handleError(500, req, res);
+        }
+      });
+  } else {
+    return handleError(404, req, res, 'Url not provided');
+  }
+};
 module.exports = {
   processPayment,
   getAllOrders,
   updateOrder,
   getOrderId,
   getOrderPerUser,
+  andreaniLogin,
 };
