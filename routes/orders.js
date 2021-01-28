@@ -12,5 +12,4 @@ router.put(
 router.get('/orders', verifyToken, orderController.getAllOrders);
 router.get('/order/:id', verifyToken, orderController.getOrderId);
 router.get('/userOrder/:id', verifyToken, orderController.getOrderPerUser);
-router.get('/andreani/login', verifyToken, orderController.andreaniLogin);
 module.exports = router;

@@ -7,7 +7,6 @@ const chalk = require('chalk');
 const cors = require('cors');
 const fileupload = require('express-fileupload');
 const path = require('path');
-
 //**Config vars and imports**/
 require('dotenv').config();
 const userRoutes = require('./routes/user');
@@ -16,6 +15,7 @@ const orderRoutes = require('./routes/orders');
 const slideRoutes = require('./routes/slides');
 const categoryRoutes = require('./routes/categories');
 const analyticsRoutes = require('./routes/analytics');
+const andreaniRoutes = require('./routes/andreani');
 const PORT = process.env.PORT || 3000;
 let mongoUrl = '';
 if (PORT === 3000) {
@@ -23,7 +23,6 @@ if (PORT === 3000) {
 } else {
   //TODO connect to mongo cluster
 }
-
 //**Middlewares**/
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -37,6 +36,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/slides', slideRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/andreani', andreaniRoutes);
 //**Connection to Database and server**/
 db(mongoUrl)
   .then((resp) => {

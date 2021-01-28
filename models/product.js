@@ -7,7 +7,7 @@ const productSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   color: [{}],
   images: [{}],
-  weight: { type: Number },
+  packageWeight: {},
   top: { type: Boolean, default: false },
   sale: { type: Number, default: 0 },
   homeView: { type: Boolean, default: false },

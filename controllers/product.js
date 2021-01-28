@@ -46,6 +46,20 @@ const createProduct = (req, res) => {
       color: parsedColor,
     });
   }
+  delete dataToSend.weight;
+  delete dataToSend.width;
+  delete dataToSend.length;
+  delete dataToSend.height;
+  // v=w*l*h
+  Object.assign(dataToSend, {
+    packageWeight: {
+      width: parseInt(body.width),
+      length: parseInt(body.length),
+      height: parseInt(body.height),
+      weight: parseInt(body.weight),
+      volume: body.width * body.height * body.length,
+    },
+  });
   Product.create(dataToSend, (err, dataCreated) => {
     if (err) {
       return handleError(500, req, res);
