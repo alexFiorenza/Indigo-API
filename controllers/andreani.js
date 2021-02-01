@@ -31,7 +31,28 @@ const andreaniCredentials = (req = request, res) => {
     return handleError(404, req, res, 'Url not provided');
   }
 };
-
+const shippingCost = (req = request, res) => {
+  const credentials = req.body.credentials;
+  const shippingInfo = req.body.shippingInfo;
+  const url = process.env.andreani_url;
+  axios
+    .get(
+      `${url}/v1/tarifas?cpDestino=${shippingInfo.cp}&contrato=${credentials.standard_shipping}&cliente=${credentials.client_code}&sucursalOrigen=${shippingInfo.shipping_office}&bultos[0][valorDeclarado]=${shippingInfo.packages[0].price}&bultos[0][volumen]=${shippingInfo.packages[0].packageWeight.volume}&bultos[0][kilos]=${shippingInfo.packages[0].packageWeight.weight}`
+    )
+    .then(function (value) {
+      return handleResponse(200, req, res, value.data);
+    })
+    .catch(function (err) {
+      if (err) {
+        return handleError(500, req, res);
+      }
+    });
+  //Parameters | optimize
+  // ?cpDestino=1400&contrato=300006611&cliente=CL0003750&sucursalOrigen=BAR&bultos[0][valorDeclarado]=1200&bultos[0][volumen]=200&bultos[0][kilos]=1.3
+};
+//TODO Execute andreani cost to send price
+const executeQuery = (credentials, shippingInfo) => {};
 module.exports = {
   andreaniCredentials,
+  shippingCost,
 };

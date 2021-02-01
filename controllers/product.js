@@ -36,6 +36,7 @@ const getAllProducts = (req, res) => {
 /*Create product*/
 const createProduct = (req, res) => {
   const { body } = req;
+  body.name = body.name.toLowerCase();
   let dataToSend = {
     ...body,
   };
@@ -74,9 +75,13 @@ const createProduct = (req, res) => {
 /*Update product*/
 const updateProduct = (req, res) => {
   const body = req.body;
+  body.name = body.name.toLowerCase();
   let dataToSend = {
     ...body,
   };
+  if (dataToSend.name) {
+    dataToSend.name.toLowerCase();
+  }
   if (body.color || body.categories) {
     const parsedColor = JSON.parse(body.color);
     const parsedCategories = JSON.parse(body.categories);
@@ -163,22 +168,35 @@ const filterProducts = (req = request, res) => {
   }
   const category = req.query.category;
   const subcategory = req.query.subcategory;
-
-  Product.paginate(
-    {
-      $and: [
-        { 'categories.name': category },
-        { 'categories.subcategories.name': subcategory },
-      ],
-    },
-    opts,
-    (err, productsFound) => {
-      if (err) {
-        return handleError(500, req, res);
+  if (category || subcategory) {
+    Product.paginate(
+      {
+        $and: [
+          { 'categories.name': category },
+          { 'categories.subcategories.name': subcategory },
+        ],
+      },
+      opts,
+      (err, productsFound) => {
+        if (err) {
+          return handleError(500, req, res);
+        }
+        return handleResponse(200, req, res, productsFound.docs);
       }
-      return handleResponse(200, req, res, productsFound.docs);
-    }
-  );
+    );
+  } else {
+    const search = req.query.search;
+    Product.paginate(
+      { name: { $regex: search } },
+      opts,
+      (err, productsFound) => {
+        if (err) {
+          return handleError(500, req, res);
+        }
+        return handleResponse(200, req, res, productsFound.docs);
+      }
+    );
+  }
 };
 module.exports = {
   getProductPerId,
