@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const { v4: uuidv4 } = require('uuid');
+const { customAlphabet } = require('nanoid');
+const uniqueid = customAlphabet('0123456789', 5);
 const ordersSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   products: [{}],
@@ -10,9 +11,11 @@ const ordersSchema = new mongoose.Schema({
   paid: { type: Boolean, default: false },
   paymentMethod: { type: Object },
   deliveryMethod: { type: String, required: true },
-  trackingId: { type: String, required: true, default: uuidv4() },
+  trackingId: { type: String, required: true, default: uniqueid() },
   instructions: { type: String },
   createdAt: { type: String, default: new Date() },
+  branch_office: { type: Object },
+  costToSend: { type: Number },
 });
 
 module.exports = mongoose.model('Order', ordersSchema);

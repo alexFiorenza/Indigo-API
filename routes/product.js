@@ -4,11 +4,7 @@ const productController = require('../controllers/product');
 const { verifyToken, verifyAdmin } = require('../utils/auth');
 
 router.get('/getOne/:id', productController.getProductPerId);
-router.get(
-  '/homeView',
-  [verifyToken, verifyAdmin],
-  productController.homeViewProducts
-);
+router.get('/homeView', productController.homeViewProducts);
 router.get('/filter/:page', productController.filterProducts);
 router.post('/', [verifyToken, verifyAdmin], productController.createProduct);
 router.put('/:id', [verifyToken, verifyAdmin], productController.updateProduct);

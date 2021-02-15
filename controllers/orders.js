@@ -3,7 +3,9 @@ const _ = require('underscore');
 const { handleError, handleResponse } = require('../utils/manageResponse');
 const mercadopago = require('mercadopago');
 const { request } = require('express');
-const axios = require('axios').default;
+const moment = require('moment');
+const PORT = process.env.PORT || 3000;
+
 /*Set mp accessToken*/
 mercadopago.configurations.setAccessToken(process.env.ACCESS_TOKEN_MP);
 
@@ -16,14 +18,29 @@ const processPayment = (req, res) => {
     token: body.orderInfo.token,
     installments: Number(body.installments),
     payment_method_id: body.paymentMethodId,
-    payer: {
-      email: 'alexxdfiorenza@gmail.com',
-      identification: {
-        type: body.orderInfo.docType,
-        number: req.body.docNumber,
-      },
-    },
   };
+
+  if (PORT === 3000) {
+    Object.assign(payment_data, {
+      payer: {
+        email: 'testuser@gmail.com',
+        identification: {
+          type: body.orderInfo.docType,
+          number: req.body.docNumber,
+        },
+      },
+    });
+  } else {
+    Object.assign(payment_data, {
+      payer: {
+        email: emailUser,
+        identification: {
+          type: body.orderInfo.docType,
+          number: req.body.docNumber,
+        },
+      },
+    });
+  }
   //MP user
   // {"id":682470188,"nickname":"TESTKR2J39CU","password":"qatest5363","site_status":"active","email":"test_user_17045136@testuser.com"}
   mercadopago.payment
@@ -35,15 +52,18 @@ const processPayment = (req, res) => {
         user: req.user,
         date: body.date,
         delayTime: body.orderInfo.delayTime,
-        status: 'activo',
+        status: 'Pendiente',
         paid: true,
+        branch_office: body.orderInfo.branch_office,
         deliveryMethod: body.orderInfo.delivery,
         paymentMethod: {
           payment_method: response.body.payment_method_id,
           payment_type: response.body.payment_type_id,
         },
       };
-
+      if (body.orderInfo.costToSend) {
+        Object.assign(dataToSave, { costToSend: body.orderInfo.costToSend });
+      }
       Order.create(dataToSave, (err, orderCreated) => {
         if (err) {
           return handleError(500, req, res);
@@ -57,7 +77,6 @@ const processPayment = (req, res) => {
       });
     })
     .catch((err) => {
-      console.log(err);
       return handleError(500, req, res, err);
     });
 };
@@ -85,15 +104,36 @@ const getAllOrders = (req, res) => {
   const user = req.user;
   const query = req.query;
   if (user.role === 'admin') {
-    Order.find(
-      { $nor: [{ status: 'rechazado' }, { status: 'completado' }] },
-      (err, ordersFound) => {
-        if (err) {
-          return handleError(500, req, res);
+    if (query.filter === 'history') {
+      const today = moment();
+      const dateToEvaluate = moment().subtract(30, 'days');
+      Order.find({ status: 'Completado' }, (err, ordersFound) => {
+        let orders = [];
+        ordersFound.forEach((order) => {
+          if (order.createdAt) {
+            const dateOrder = new Date(order.createdAt);
+            const betweenDates = moment(dateOrder).isBetween(
+              dateToEvaluate,
+              today
+            );
+            if (betweenDates) {
+              orders.push(order);
+            }
+          }
+        });
+        return handleResponse(200, req, res, orders);
+      });
+    } else {
+      Order.find(
+        { $nor: [{ status: 'rechazado' }, { status: 'completado' }] },
+        (err, ordersFound) => {
+          if (err) {
+            return handleError(500, req, res);
+          }
+          return handleResponse(200, req, res, ordersFound);
         }
-        return handleResponse(200, req, res, ordersFound);
-      }
-    );
+      );
+    }
   } else {
     if (query.filter === 'history') {
       Order.find({ 'user._id': user._id }, (err, ordersFound) => {
@@ -133,12 +173,10 @@ const getOrderId = (req, res) => {
 };
 const getOrderPerUser = (req = request, res) => {
   const userId = req.params.id;
-  console.log(userId);
   Order.find({ 'user._id': userId }, (err, ordersFound) => {
     if (err) {
       return handleError(500, req, res);
     }
-    console.log(ordersFound);
     return handleResponse(200, req, res, ordersFound);
   });
 };

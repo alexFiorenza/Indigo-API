@@ -12,7 +12,6 @@ const getAllCategories = (req, res) => {
 };
 const updateSubCategories = (req = request, res) => {
   const data = req.body;
-  console.log(data);
   const category = req.params.id;
   Category.findByIdAndUpdate(
     category,

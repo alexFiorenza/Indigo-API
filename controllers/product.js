@@ -181,7 +181,10 @@ const filterProducts = (req = request, res) => {
         if (err) {
           return handleError(500, req, res);
         }
-        return handleResponse(200, req, res, productsFound.docs);
+        return handleResponse(200, req, res, {
+          result: productsFound.docs,
+          totalPages: productsFound.totalPages,
+        });
       }
     );
   } else {
@@ -193,7 +196,10 @@ const filterProducts = (req = request, res) => {
         if (err) {
           return handleError(500, req, res);
         }
-        return handleResponse(200, req, res, productsFound.docs);
+        return handleResponse(200, req, res, {
+          result: productsFound.docs,
+          totalPages: productsFound.totalPages,
+        });
       }
     );
   }
