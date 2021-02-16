@@ -49,7 +49,11 @@ const processPayment = (req, res) => {
       const dataToSave = {
         price: Number(body.price),
         products: body.orderInfo.products,
-        user: req.user,
+        user: {
+          ...req.user,
+          docType: body.orderInfo.docType,
+          docNumber: body.orderInfo.docNumber,
+        },
         date: body.date,
         delayTime: body.orderInfo.delayTime,
         status: 'Pendiente',
