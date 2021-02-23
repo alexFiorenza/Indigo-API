@@ -28,9 +28,9 @@ const createSlide = (req = request, res = response) => {
     'description',
     'button',
     'color',
-    'btnDirection',
     'wordsColor',
   ]);
+  Object.assign(dataPicked, { btnDirection: JSON.parse(body.btnDirection) });
   Slide.create(dataPicked, async (err, slideCreated) => {
     if (err) {
       return handleError(500, req, res);
@@ -57,9 +57,11 @@ const updateSlide = (req, res) => {
     'description',
     'button',
     'color',
-    'btnDirection',
     'wordsColor',
   ]);
+  if (body.btnDirection) {
+    Object.assign(dataPicked, { btnDirection: JSON.parse(body.btnDirection) });
+  }
   Slide.findByIdAndUpdate(
     id,
     dataPicked,
@@ -96,7 +98,7 @@ const deleteSlide = (req = request, res) => {
       return handleError(500, req, res);
     }
     if (slideFound.image !== null) {
-      fs.unlinkSync(`uploads/${slideFound.image}`);
+      fs.unlinkSync(`uploads/${slideFound.images[0].image}`);
     }
     Slide.findByIdAndDelete(id, (err, slideReceived) => {
       if (err) {

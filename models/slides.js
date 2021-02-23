@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { any, object } = require('underscore');
 
 const slideSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -6,7 +7,7 @@ const slideSchema = new mongoose.Schema({
   description: String,
   button: String,
   color: String,
-  btnDirection: String,
+  btnDirection: { type: Object },
   wordsColor: String,
 });
 module.exports = mongoose.model('Slide', slideSchema);

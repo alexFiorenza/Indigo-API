@@ -19,7 +19,6 @@ const processPayment = (req, res) => {
     installments: Number(body.installments),
     payment_method_id: body.paymentMethodId,
   };
-
   if (PORT === 3000) {
     Object.assign(payment_data, {
       payer: {
@@ -60,9 +59,12 @@ const processPayment = (req, res) => {
         paid: true,
         branch_office: body.orderInfo.branch_office,
         deliveryMethod: body.orderInfo.delivery,
-        paymentMethod: {
+        paymentData: {
           payment_method: response.body.payment_method_id,
           payment_type: response.body.payment_type_id,
+          payment_id: response.body.id,
+          payment_card: response.body.card,
+          payment_installments: response.body.installments,
         },
       };
       if (body.orderInfo.costToSend) {
@@ -89,7 +91,15 @@ const processPayment = (req, res) => {
 const updateOrder = (req, res) => {
   const body = req.body;
   const id = req.params.id;
-  const dataToUpdate = _.pick(body, ['status']);
+  var dataToUpdate;
+  if (body.status) {
+    dataToUpdate = _.pick(body, ['status']);
+  }
+  if (body.trackingDeliveryData.length > 0) {
+    Object.assign(dataToUpdate, {
+      trackingDeliveryData: body.trackingDeliveryData,
+    });
+  }
   Order.findByIdAndUpdate(
     id,
     dataToUpdate,

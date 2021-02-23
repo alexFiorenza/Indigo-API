@@ -11,7 +11,8 @@ const userSchema = new mongoose.Schema({
   role: { type: String, default: 'user' },
   cp: { type: Number },
   phone: { type: Number },
-  building: { type: String },
+  floor: { type: String },
+  department: { type: String },
   createdAt: { type: String, default: new Date() },
   favorites: [{}],
 });

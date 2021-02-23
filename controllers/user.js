@@ -67,6 +67,12 @@ const loginUser = (req, res) => {
         'numberStreet',
         'instructions',
       ]);
+      if (userFound.floor) {
+        Object.assign(payload, {
+          floor: userFound.floor,
+          department: userFound.department,
+        });
+      }
       createToken(payload)
         .then((data) => {
           const token = data;
