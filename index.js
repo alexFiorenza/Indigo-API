@@ -24,9 +24,9 @@ if (PORT === 3000) {
   //TODO connect to mongo cluster
 }
 //**Middlewares**/
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(cors());
 app.use(fileupload());
 //**Routes**/
 app.use('/public', express.static(path.join(__dirname, 'uploads/')));

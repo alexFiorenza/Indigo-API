@@ -1,6 +1,8 @@
 const { request, response } = require('express');
 const { handleError, handleResponse } = require('../utils/manageResponse');
 const axios = require('axios').default;
+const path = require('path');
+const fs = require('fs');
 const andreaniCredentials = (req = request, res) => {
   const user_password = `${process.env.user_andreani}:${process.env.password_andreani}`;
   const url = process.env.andreani_url;
@@ -116,6 +118,31 @@ const getStateOrder = async (req = request, res = response) => {
     return handleError(500, req, res, error.message);
   }
 };
+const getPdfStateOrder = async (req = request, res = response) => {
+  const id = req.params.id;
+  try {
+    const header = await setAuthToken();
+    const blob = await axios.request({
+      method: 'GET',
+      url: `${process.env.andreani_url}/v2/ordenes-de-envio/${id}/etiquetas`,
+      responseType: 'arraybuffer',
+      responseEncoding: 'binary',
+      headers: header,
+    });
+    fs.writeFile(
+      path.join(__dirname, `../uploads/${id}.pdf`),
+      blob.data,
+      function (err) {
+        if (err) {
+          return console.log(err);
+        }
+        return handleResponse(200, req, res, 'File was saved succesfully');
+      }
+    );
+  } catch (error) {
+    return handleError(500, req, res, error.message);
+  }
+};
 const setAuthToken = (data) => {
   return new Promise((resolve, reject) => {
     const user_password = `${process.env.user_andreani}:${process.env.password_andreani}`;
@@ -150,4 +177,5 @@ module.exports = {
   shippingCost,
   createOrder,
   getStateOrder,
+  getPdfStateOrder,
 };
