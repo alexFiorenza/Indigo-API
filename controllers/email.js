@@ -35,7 +35,7 @@ const sendConfirmationOrder = (req, res) => {
   if (order_data.deliveryMethod === 'andreani') {
     delivery = `Envio a domicilio despacho desde ${order_data.branch_office.localidad}`;
   } else {
-    delivery = order_data.deliveryMethod;
+    delivery = `Retira en sucursal ${order_data.branch_office.localidad}`;
   }
   const msg = {
     personalizations: [
@@ -80,41 +80,45 @@ const updateOrderStatus = (req = request, res = response) => {
   if (!order_data) {
     return handleError(500, req, res, 'Order data was not provided');
   }
+  let delivery;
+  let hasToDeliverAddress;
   if (order_data.deliveryMethod === 'andreani') {
     delivery = `Envio a domicilio despacho desde ${order_data.branch_office.localidad}`;
+    hasToDeliverAddress = true;
   } else {
     delivery = `Retira en sucursal ${order_data.branch_office.localidad}`;
+    hasToDeliverAddress = false;
   }
   const msg = {
-    personalizations: [
-      {
-        to: [
-          {
-            email: order_data.user.email,
-            name: order_data.user.name,
-          },
-        ],
-        dynamic_template_data: {
-          order_tracking_id: order_data.trackingId,
-          order_state: order_data.status,
-          order_shipping_method: delivery,
-          order_delivery_cost: order_data.costToSend,
-          order_delivery_branch_localidad: order_data.branch_office.localidad,
-          order_delivery_products: order_data.trackingDeliveryData,
-          order_payment_method: order_data.paymentData.payment_method,
-          order_payment_price: order_data.price,
-        },
-      },
-    ],
+    to: {
+      email: order_data.user.email,
+      name: order_data.user.name,
+    },
     from: {
       email: process.env.email_sender_address,
       name: process.env.email_sender_name,
     },
-    template_id: process.env.update_order_status_andreani.toString(),
+    template_id: process.env.update_order_status.toString(),
+    dynamic_template_data: {
+      order_tracking_id: order_data.trackingId,
+      order_status: order_data.status,
+      order_shipping_method: delivery,
+      order_shipping_bool: hasToDeliverAddress,
+      order_delivery_cost: order_data.costToSend,
+      order_delivery_branch_localidad: order_data.branch_office.localidad,
+      order_delivery_branch_street: order_data.branch_office.calle,
+      order_delivery_products: order_data.trackingDeliveryData,
+      order_payment_method: order_data.paymentData.payment_method,
+      order_payment_price: order_data.price,
+      order_user_name: order_data.user.name,
+      order_user_dni: order_data.user.docNumber,
+    },
   };
+  console.log(msg.template_id);
   sendGrid
     .send(msg)
     .then((response) => {
+      console.log(response);
       return handleResponse(200, req, res, 'Email was sent properly');
     })
     .catch((err) => {
@@ -122,4 +126,8 @@ const updateOrderStatus = (req = request, res = response) => {
     });
 };
 
-module.exports = { testEmail, sendConfirmationOrder, updateOrderStatus };
+module.exports = {
+  testEmail,
+  sendConfirmationOrder,
+  updateOrderStatus,
+};
