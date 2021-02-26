@@ -16,6 +16,7 @@ const slideRoutes = require('./routes/slides');
 const categoryRoutes = require('./routes/categories');
 const analyticsRoutes = require('./routes/analytics');
 const andreaniRoutes = require('./routes/andreani');
+const emailRoutes = require('./routes/email');
 const PORT = process.env.PORT || 3000;
 let mongoUrl = '';
 if (PORT === 3000) {
@@ -37,6 +38,7 @@ app.use('/api/slides', slideRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/andreani', andreaniRoutes);
+app.use('/api/email', emailRoutes);
 //**Connection to Database and server**/
 db(mongoUrl)
   .then((resp) => {

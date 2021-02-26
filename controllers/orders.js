@@ -2,7 +2,7 @@ const Order = require('../models/orders');
 const _ = require('underscore');
 const { handleError, handleResponse } = require('../utils/manageResponse');
 const mercadopago = require('mercadopago');
-const { request } = require('express');
+const { request, response } = require('express');
 const moment = require('moment');
 const PORT = process.env.PORT || 3000;
 
@@ -88,14 +88,15 @@ const processPayment = (req, res) => {
 };
 
 /*Update order status*/
-const updateOrder = (req, res) => {
+const updateOrder = (req = request, res = response) => {
   const body = req.body;
+
   const id = req.params.id;
   var dataToUpdate;
   if (body.status) {
     dataToUpdate = _.pick(body, ['status']);
   }
-  if (body.trackingDeliveryData.length > 0) {
+  if (body.trackingDeliveryData) {
     Object.assign(dataToUpdate, {
       trackingDeliveryData: body.trackingDeliveryData,
     });
@@ -177,7 +178,6 @@ const getAllOrders = (req, res) => {
 
 const getOrderId = (req, res) => {
   const id = req.params.id;
-
   Order.findById(id, (err, orderFound) => {
     if (err) {
       return handleError(500, req, res);

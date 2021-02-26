@@ -1,6 +1,11 @@
 const { request, response } = require('express');
 
-const handleError = (status, req, res, message = 'Unexpected error') => {
+const handleError = (
+  status,
+  req = request,
+  res = response,
+  message = 'Unexpected error'
+) => {
   if (status === 500) {
     return res.status(status).json({ status: false, message });
   } else if (status === 400 || status === 404) {

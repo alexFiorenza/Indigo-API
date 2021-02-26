@@ -4,7 +4,7 @@ const { verifyToken, verifyAdmin } = require('../utils/auth');
 const orderController = require('../controllers/orders');
 
 router.post('/proccess_payment', verifyToken, orderController.processPayment);
-router.put(
+router.post(
   '/update/:id',
   [verifyToken, verifyAdmin],
   orderController.updateOrder
