@@ -157,7 +157,6 @@ const manageImages = async (
           multi: true,
         }
       );
-      console.log(productUpdated);
       return {
         status: 200,
         response: productUpdated,

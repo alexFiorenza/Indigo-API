@@ -66,6 +66,7 @@ const loginUser = (req, res) => {
         'date',
         'numberStreet',
         'instructions',
+        'createdAt',
       ]);
       if (userFound.floor) {
         Object.assign(payload, {

@@ -114,11 +114,9 @@ const updateOrderStatus = (req = request, res = response) => {
       order_user_dni: order_data.user.docNumber,
     },
   };
-  console.log(msg.template_id);
   sendGrid
     .send(msg)
     .then((response) => {
-      console.log(response);
       return handleResponse(200, req, res, 'Email was sent properly');
     })
     .catch((err) => {

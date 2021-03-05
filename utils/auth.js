@@ -28,7 +28,7 @@ const verifyAdmin = (req, res, next) => {
 const createToken = (data) => {
   const privateKey = process.env.JWT_SECRET;
   return new Promise((resolve, reject) => {
-    jwt.sign(data, privateKey, (err, token) => {
+    jwt.sign(data, privateKey, { expiresIn: '2 days' }, (err, token) => {
       if (err) {
         reject(err);
       }
