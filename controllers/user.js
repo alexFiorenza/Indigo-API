@@ -4,7 +4,7 @@ const User = require('../models/user');
 const { handleError, handleResponse } = require('../utils/manageResponse');
 const { createToken } = require('../utils/auth');
 const manageResponse = require('../utils/manageResponse');
-const { request } = require('express');
+const { request, response } = require('express');
 /*Get one user per id*/
 const getOneUserPerId = (req, res) => {
   const { id } = req.params;
@@ -174,6 +174,33 @@ const deleteUser = (req, res) => {
   });
 };
 
+const updateToken = (req = request, res = response) => {
+  const tokenToUpdate = req.body;
+  const payload = _.pick(tokenToUpdate, [
+    'name',
+    'town',
+    'street',
+    'role',
+    'email',
+    'province',
+    '_id',
+    'cp',
+    'phone',
+    'date',
+    'numberStreet',
+    'instructions',
+    'createdAt',
+  ]);
+  createToken(payload)
+    .then((data) => {
+      const token = data;
+      return handleResponse(200, req, res, { token, payload });
+    })
+    .catch((err) => {
+      return handleError(500, req, res);
+    });
+};
+
 module.exports = {
   getOneUserPerId,
   registerUser,
@@ -183,4 +210,5 @@ module.exports = {
   manageFavorites,
   getFavorites,
   deleteFavorite,
+  updateToken,
 };

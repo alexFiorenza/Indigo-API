@@ -11,4 +11,5 @@ router.delete('/:id', verifyToken, userController.deleteUser);
 router.post('/addFavorite', verifyToken, userController.manageFavorites);
 router.get('/getFavorites', verifyToken, userController.getFavorites);
 router.put('/deleteFavorite', verifyToken, userController.deleteFavorite);
+router.put('/updateToken', userController.updateToken);
 module.exports = router;
