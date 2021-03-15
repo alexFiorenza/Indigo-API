@@ -4,8 +4,8 @@ const axios = require('axios').default;
 const path = require('path');
 const fs = require('fs');
 const andreaniCredentials = (req = request, res) => {
-  const user_password = `${process.env.user_andreani}:${process.env.password_andreani}`;
-  const url = process.env.andreani_url;
+  const user_password = `${process.env.USER_ANDREANI}:${process.env.PASSWORD_ANDREANI}`;
+  const url = process.env.ANDREANI_URL;
   const base64 = Buffer.from(user_password).toString('base64');
   const opts = {
     headers: {
@@ -18,10 +18,10 @@ const andreaniCredentials = (req = request, res) => {
       .then(function (response) {
         return handleResponse(200, req, res, {
           authToken: response.headers['x-authorization-token'],
-          client_code: process.env.client_andreani,
-          branch_office_shipping: process.env.branch_office_shipping,
-          standard_shipping: process.env.standard_shipping,
-          fast_shipping: process.env.fast_shipping,
+          client_code: process.env.CLIENT_ANDREANI,
+          branch_office_shipping: process.env.BRANCH_OFFICE_SHIPPING,
+          standard_shipping: process.env.STANDARD_SHIPPING,
+          fast_shipping: process.env.FAST_SHIPPING,
         });
       })
       .catch((err) => {
@@ -57,21 +57,21 @@ const createOrder = (req = request, res) => {
   const sender = req.body.sender;
   const receiver = req.body.receiver;
   const packages = req.body.packages;
-  const url = process.env.andreani_url;
+  const url = process.env.ANDREANI_URL;
   setAuthToken(credentials).then((headers) => {
     axios
       .post(
         `${url}/v2/ordenes-de-envio`,
         {
-          contrato: credentials.standard_shipping,
+          contrato: credentials.STANDARD_SHIPPING,
           origen: origin,
           destino: destination,
           destinatario: receiver,
           remitente: {
-            nombreCompleto: process.env.owner_complete_name,
-            email: process.env.owner_email,
-            documentoTipo: process.env.owner_docType,
-            documentoNumero: process.env.owner_docNumber,
+            nombreCompleto: process.env.OWNER_COMPLETE_NAME,
+            email: process.env.OWNER_EMAIL,
+            documentoTipo: process.env.OWNER_DOCTYPE,
+            documentoNumero: process.env.OWNER_DOCNUMBER,
           },
           bultos: packages,
         },
@@ -88,7 +88,7 @@ const createOrder = (req = request, res) => {
   });
 };
 function executeQuery(query, req, res) {
-  const url = process.env.andreani_url;
+  const url = process.env.ANDREANI_URL;
   //**cpDestino=1400&contrato=300006611&cliente=CL0003750&sucursalOrigen=BAR&bultos[0][valorDeclarado]=1200&bultos[0][volumen]=200&bultos[0][kilos]=1.3
   axios
     .get(`${url}${query}`)
@@ -106,7 +106,7 @@ const getStateOrder = async (req = request, res = response) => {
   try {
     const header = await setAuthToken();
     const response = await axios.get(
-      `${process.env.andreani_url}/v2/ordenes-de-envio/${id}`,
+      `${process.env.ANDREANI_URL}/v2/ordenes-de-envio/${id}`,
       {
         headers: header,
       }
@@ -124,7 +124,7 @@ const getPdfStateOrder = async (req = request, res = response) => {
     const header = await setAuthToken();
     const blob = await axios.request({
       method: 'GET',
-      url: `${process.env.andreani_url}/v2/ordenes-de-envio/${id}/etiquetas`,
+      url: `${process.env.ANDREANI_URL}/v2/ordenes-de-envio/${id}/etiquetas`,
       responseType: 'arraybuffer',
       responseEncoding: 'binary',
       headers: header,
@@ -145,8 +145,8 @@ const getPdfStateOrder = async (req = request, res = response) => {
 };
 const setAuthToken = (data) => {
   return new Promise((resolve, reject) => {
-    const user_password = `${process.env.user_andreani}:${process.env.password_andreani}`;
-    const url = process.env.andreani_url;
+    const user_password = `${process.env.USER_ANDREANI}:${process.env.PASSWORD_ANDREANI}`;
+    const url = process.env.ANDREANI_URL;
     const base64 = Buffer.from(user_password).toString('base64');
     const opts = {
       headers: {

@@ -1,13 +1,13 @@
 const { handleError, handleResponse } = require('../utils/manageResponse');
 const sendGrid = require('@sendgrid/mail');
-sendGrid.setApiKey(process.env.email_api_key);
+sendGrid.setApiKey(process.env.EMAIL_API_KEY);
 const { request, response } = require('express');
 const moment = require('moment');
 moment.locale('es');
 const testEmail = (req = request, res = response) => {
   const msg = {
     to: 'alexxdfiorenza@gmail.com',
-    from: process.env.email_sender_address,
+    from: process.env.EMAIL_SENDER_ADDRESS,
     subject: 'Using send grid test',
     text: 'This is a test email for api ',
     html: '<strong>Test email</strong>',
@@ -61,8 +61,8 @@ const sendConfirmationOrder = (req, res) => {
       },
     ],
     from: {
-      email: process.env.email_sender_address,
-      name: process.env.email_sender_name,
+      email: process.env.EMAIL_SENDER_ADDRESS,
+      name: process.env.EMAIL_SENDER_NAME,
     },
     template_id: process.env.transaction_completed_id.toString(),
   };
@@ -95,10 +95,10 @@ const updateOrderStatus = (req = request, res = response) => {
       name: order_data.user.name,
     },
     from: {
-      email: process.env.email_sender_address,
-      name: process.env.email_sender_name,
+      email: process.env.EMAIL_SENDER_ADDRESS,
+      name: process.env.EMAIL_SENDER_NAME,
     },
-    template_id: process.env.update_order_status.toString(),
+    template_id: process.env.UPDATE_ORDER_STATUS.toString(),
     dynamic_template_data: {
       order_tracking_id: order_data.trackingId,
       order_status: order_data.status,
