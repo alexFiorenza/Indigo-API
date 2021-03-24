@@ -7,34 +7,36 @@
 - Backend Language: NodeJS (javascript)
 - Image Uploading
 - Heroku hosting
-- Google cloud platform for file storage 
+- Google cloud platform for file storage
 - 💰 [Mercadopago API](https://github.com/mercadopago/dx-nodejs)
 - 🚌[Andreani API](https://developers.andreani.com/documentacion)
 - ✉️[SendGrid API ](https://sendgrid.com/)
 
 #### Env variables
-|  Key | Value   |
-| ------------ | ------------ |
-| JWT_SECRET | Value for jsonwebtoken encryption |
-|  PUBLIC_KEY |   This is the given key by mercadopago   |
-|  ACCESS_TOKEN_MP  | The token given by mercadopago to use when proccesing payments  |
-| USER_ANDREANI  |  User to login in andreani API   |
-| PASSWORD_ANDREANI  | Password to login in andreani API  |
-|  ANDREANI_URL |  Url to make requests in andreani API |
-|  CLIENT_ANDREANI | Client code andreani  |
-|  BRANCH_OFFICE_SHIPPING | Contract code to send to a branch office  |
-|  STANDARD_SHIPPING | Contract code to send to an address  |
-|  FAST_SHIPPING | Contract code to fast shipping   |
-|  OWNER_COMPLETE_NAME  | Owner name of the andreani account  |
-|  OWNER_EMAIL | Owner email of the andreani account  |
-|  OWNER_DOCTYPE | Type of documentation andreani account  |
-|  OWNER_DOCNUMBER | Documentation number of the andreani account  |
-|  EMAIL_API_KEY | Sengrid api key    |
-|  EMAIL_SENDER_ADDRESS | Sender of the emails  |
-|  EMAIL_SENDER_NAME | Name of the sender   |
-| TRANSACTION_COMPLETED_ID  | ID of the transaction completed template  |
-| UPDATE_ORDER_STATUS  | ID of an update in order status template  |
 
+| Key                      | Value                                                                   |
+| ------------------------ | ----------------------------------------------------------------------- |
+| GCP_KEY_FILE             | The gcp json name in which all the gcp json credentials should be saved |
+| GCP_CRED                 | Json credentials for gcp service                                        |
+| JWT_SECRET               | Value for jsonwebtoken encryption                                       |
+| PUBLIC_KEY               | This is the given key by mercadopago                                    |
+| ACCESS_TOKEN_MP          | The token given by mercadopago to use when proccesing payments          |
+| USER_ANDREANI            | User to login in andreani API                                           |
+| PASSWORD_ANDREANI        | Password to login in andreani API                                       |
+| ANDREANI_URL             | Url to make requests in andreani API                                    |
+| CLIENT_ANDREANI          | Client code andreani                                                    |
+| BRANCH_OFFICE_SHIPPING   | Contract code to send to a branch office                                |
+| STANDARD_SHIPPING        | Contract code to send to an address                                     |
+| FAST_SHIPPING            | Contract code to fast shipping                                          |
+| OWNER_COMPLETE_NAME      | Owner name of the andreani account                                      |
+| OWNER_EMAIL              | Owner email of the andreani account                                     |
+| OWNER_DOCTYPE            | Type of documentation andreani account                                  |
+| OWNER_DOCNUMBER          | Documentation number of the andreani account                            |
+| EMAIL_API_KEY            | Sengrid api key                                                         |
+| EMAIL_SENDER_ADDRESS     | Sender of the emails                                                    |
+| EMAIL_SENDER_NAME        | Name of the sender                                                      |
+| TRANSACTION_COMPLETED_ID | ID of the transaction completed template                                |
+| UPDATE_ORDER_STATUS      | ID of an update in order status template                                |
 
 ## 👩🏻‍💻 Development | Installation
 
