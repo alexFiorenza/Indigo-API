@@ -14,16 +14,73 @@ if (process.env.PORT !== 3000) {
   //TODO bucket should be in a env variable
   fileUploadBucket = google_cloud.bucket('indigo-fileupload');
 }
-const resolveExtension = async (image, id = null) => {
-  if (image instanceof Array) {
-    let imagesArray = [];
-    let uid;
-    image.forEach((i) => {
-      const filename = i.name.replace(/\s/g, '');
-      const splitedImage = filename.split('.');
+const resolveExtension = (image, id = null) => {
+  return new Promise((resolve, reject) => {
+    if (image instanceof Array) {
+      var imagesArray = [];
+      let uid;
+
+      image.forEach((i, index) => {
+        const filename = i.name.replace(/\s/g, '');
+        const splitedImage = filename.split('.');
+        const ext = splitedImage[splitedImage.length - 1];
+        if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'gif') {
+          uid = uniqid();
+          const imageName = `${splitedImage[0]}-${id}.${ext}`;
+          if (process.env.PORT !== 3000) {
+            const file = fileUploadBucket.file(imageName);
+            const fileStream = file.createWriteStream({
+              resumable: false,
+            });
+            const publicUrl = `https://storage.googleapis.com/${fileUploadBucket.name}/${file.name}`;
+            const tmp = {
+              uid,
+              image: publicUrl,
+            };
+            imagesArray.push(tmp);
+            fileStream
+              .on('finish', () => {})
+              .on('error', () => {
+                reject({
+                  ok: false,
+                  message: 'Unable to upload image something went wrong',
+                });
+              })
+              .end(i.data);
+          } else {
+            i.mv(`uploads/${imageName}`, (err) => {
+              if (err) {
+                return {
+                  err,
+                  message: 'Unexpected error',
+                };
+              }
+            });
+            const tmp = {
+              uid,
+              image: imageName,
+            };
+            imagesArray.push(tmp);
+          }
+        } else {
+          reject({
+            check: false,
+            reason: 'Wrong extension',
+          });
+        }
+      });
+      if (imagesArray.length > 0) {
+        resolve({
+          check: true,
+          response: imagesArray,
+        });
+      }
+    } else {
+      const fileName = image.name.replace(/\s/g, '');
+      const splitedImage = fileName.split('.');
       const ext = splitedImage[splitedImage.length - 1];
+      const uid = uniqid();
       if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'gif') {
-        uid = uniqid();
         const imageName = `${splitedImage[0]}-${id}.${ext}`;
         if (process.env.PORT !== 3000) {
           const file = fileUploadBucket.file(imageName);
@@ -32,91 +89,36 @@ const resolveExtension = async (image, id = null) => {
           });
           fileStream
             .on('finish', () => {
-              const publicUrl = `https://storage.googleapis.com/${fileUploadBucket.name}/${file.name}`;
-              const tmp = {
-                uid,
-                image: publicUrl,
-              };
-              imagesArray.push(tmp);
-            })
-            .on('error', () => {
-              return res.status(500).json({
-                ok: false,
-                message: 'Unable to upload image something went wrong',
-              });
-            })
-            .end(image.data);
-        } else {
-          i.mv(`uploads/${imageName}`, (err) => {
-            if (err) {
-              return {
-                err,
-                message: 'Unexpected error',
-              };
-            }
-          });
-          const tmp = {
-            uid,
-            image: imageName,
-          };
-          imagesArray.push(tmp);
-        }
-      } else {
-        return {
-          check: false,
-          reason: 'Wrong extension',
-        };
-      }
-    });
-    return {
-      check: true,
-      response: imagesArray,
-    };
-  } else {
-    const fileName = image.name.replace(/\s/g, '');
-    const splitedImage = fileName.split('.');
-    const ext = splitedImage[splitedImage.length - 1];
-    const uid = uniqid();
-
-    if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'gif') {
-      const imageName = `${splitedImage[0]}-${id}.${ext}`;
-      try {
-        if (process.env.PORT !== 3000) {
-          const file = fileUploadBucket.file(imageName);
-          const fileStream = file.createWriteStream({
-            resumable: false,
-          });
-          fileStream
-            .on('finish', () => {
               var publicUrl = `https://storage.googleapis.com/${fileUploadBucket.name}/${file.name}`;
-              return {
+              resolve({
                 check: true,
                 response: publicUrl,
                 uid,
-              };
+              });
             })
             .on('error', () => {
-              console.error('error saving image');
+              reject('error saving image');
             })
             .end(image.data);
         } else {
+          console.log('entered here');
+
           image.mv(`uploads/${imageName}`, (err) => {
             if (err) {
-              return {
-                err,
-                message: 'Unexpected error',
-              };
+              reject({ err, message: 'Unexpected error' });
             }
           });
+          resolve({
+            check: true,
+            response: imageName,
+            uid,
+          });
         }
-      } catch (error) {}
-    } else {
-      return {
-        check: false,
-        reason: 'Wrong extension',
-      };
+      } else {
+        reject({ check: false, reason: 'Wrong extension' });
+      }
     }
-  }
+  });
 };
 const deleteFiles = (file, id, Model = mongoose.Model, imageId) => {
   if (file instanceof Array) {
@@ -194,38 +196,38 @@ const manageImages = async (
   }
   if (req.files !== null) {
     var image = req.files.image;
-    // const { response: imageName, uid } = await resolveExtension(image, id);
-    await resolveExtension(image, id);
+    console.log('must be called');
+    const { response: imageName, uid } = await resolveExtension(image, id);
     let obj;
-    // if (imageName instanceof Array) {
-    //   obj = imageName;
-    // } else {
-    //   obj = {
-    //     uid,
-    //     image: imageName,
-    //   };
-    // }
-    // try {
-    //   const productUpdated = await Model.findByIdAndUpdate(
-    //     { _id: id },
-    //     { $push: { images: obj } },
-    //     {
-    //       useFindAndModify: false,
-    //       new: true,
-    //       multi: true,
-    //     }
-    //   );
-    //   return {
-    //     status: 200,
-    //     response: productUpdated,
-    //   };
-    // } catch (error) {
-    //   return {
-    //     status: 500,
-    //     message: 'Unexpected error',
-    //     error,
-    //   };
-    // }
+    if (imageName instanceof Array) {
+      obj = imageName;
+    } else {
+      obj = {
+        uid,
+        image: imageName,
+      };
+    }
+    try {
+      const productUpdated = await Model.findByIdAndUpdate(
+        { _id: id },
+        { $push: { images: obj } },
+        {
+          useFindAndModify: false,
+          new: true,
+          multi: true,
+        }
+      );
+      return {
+        status: 200,
+        response: productUpdated,
+      };
+    } catch (error) {
+      return {
+        status: 500,
+        message: 'Unexpected error',
+        error,
+      };
+    }
   }
   if (!body.deleteFile && !req.files) {
     return {

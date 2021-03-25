@@ -17,9 +17,9 @@ const categoryRoutes = require('./routes/categories');
 const analyticsRoutes = require('./routes/analytics');
 const andreaniRoutes = require('./routes/andreani');
 const emailRoutes = require('./routes/email');
-const PORT = process.env.PORT || 3500;
+const PORT = process.env.PORT || 3000;
 let mongoUrl = '';
-if (PORT === 3500) {
+if (PORT === 3000) {
   mongoUrl = 'mongodb://localhost:/indigo';
 } else {
   //TODO connect to mongo cluster
