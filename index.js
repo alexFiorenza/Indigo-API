@@ -18,8 +18,9 @@ const analyticsRoutes = require('./routes/analytics');
 const andreaniRoutes = require('./routes/andreani');
 const emailRoutes = require('./routes/email');
 const PORT = process.env.PORT || 3000;
+//TODO Find a way to detect if I am in production or not
 let mongoUrl = '';
-if (PORT === 3000) {
+if (process.env.DEV) {
   mongoUrl = 'mongodb://localhost:/indigo';
 } else {
   //TODO connect to mongo cluster

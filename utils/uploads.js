@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const { Storage } = require('@google-cloud/storage');
 var google_cloud;
 var fileUploadBucket;
-if (process.env.PORT !== 3000) {
+if (!process.env.DEV) {
   google_cloud = new Storage({
     keyFilename: path.join(__dirname, '../gcpconfig.json'),
     projectId: 'indigo-307711',
@@ -19,7 +19,6 @@ const resolveExtension = (image, id = null) => {
     if (image instanceof Array) {
       var imagesArray = [];
       let uid;
-
       image.forEach((i, index) => {
         const filename = i.name.replace(/\s/g, '');
         const splitedImage = filename.split('.');
@@ -27,7 +26,7 @@ const resolveExtension = (image, id = null) => {
         if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'gif') {
           uid = uniqid();
           const imageName = `${splitedImage[0]}-${id}.${ext}`;
-          if (process.env.PORT !== 3000) {
+          if (!process.env.DEV) {
             const file = fileUploadBucket.file(imageName);
             const fileStream = file.createWriteStream({
               resumable: false,
@@ -82,7 +81,7 @@ const resolveExtension = (image, id = null) => {
       const uid = uniqid();
       if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'gif') {
         const imageName = `${splitedImage[0]}-${id}.${ext}`;
-        if (process.env.PORT !== 3000) {
+        if (!process.env.DEV) {
           const file = fileUploadBucket.file(imageName);
           const fileStream = file.createWriteStream({
             resumable: false,
@@ -101,8 +100,6 @@ const resolveExtension = (image, id = null) => {
             })
             .end(image.data);
         } else {
-          console.log('entered here');
-
           image.mv(`uploads/${imageName}`, (err) => {
             if (err) {
               reject({ err, message: 'Unexpected error' });
@@ -128,7 +125,7 @@ const deleteFiles = (file, id, Model = mongoose.Model, imageId) => {
     };
   } else {
     return new Promise((resolve, reject) => {
-      if (process.env.PORT !== 3000) {
+      if (!process.env.DEV) {
         fileUploadBucket.file(file).delete();
       } else {
         fs.unlinkSync(`uploads/${file}`);
@@ -196,7 +193,6 @@ const manageImages = async (
   }
   if (req.files !== null) {
     var image = req.files.image;
-    console.log('must be called');
     const { response: imageName, uid } = await resolveExtension(image, id);
     let obj;
     if (imageName instanceof Array) {

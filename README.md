@@ -16,6 +16,7 @@
 
 | Key                      | Value                                                                   |
 | ------------------------ | ----------------------------------------------------------------------- |
+| DEV                      | This property must be set just in the development enviorment            |
 | GCP_KEY_FILE             | The gcp json name in which all the gcp json credentials should be saved |
 | GCP_CRED                 | Json credentials for gcp service                                        |
 | JWT_SECRET               | Value for jsonwebtoken encryption                                       |
