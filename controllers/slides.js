@@ -14,8 +14,10 @@ const getSliderPerId = (req = request, res) => {
   });
 };
 const getAllSlides = async (req, res) => {
+  console.log('reached');
   try {
     const slides = await Slide.find({});
+    console.log(slides);
     return handleResponse(200, req, res, slides);
   } catch (error) {
     return handleError(500, req, res);
