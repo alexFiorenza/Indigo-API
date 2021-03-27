@@ -18,12 +18,11 @@ const analyticsRoutes = require('./routes/analytics');
 const andreaniRoutes = require('./routes/andreani');
 const emailRoutes = require('./routes/email');
 const PORT = process.env.PORT || 3000;
-//TODO Find a way to detect if I am in production or not
 let mongoUrl = '';
 if (process.env.DEV) {
   mongoUrl = 'mongodb://localhost:/indigo';
 } else {
-  //TODO connect to mongo cluster
+  mongoUrl = `mongodb+srv://${process.env.DB_USER_NAME}:${process.env.DB_USER_PASSWORD}@${process.env.DB_CLUSTER}.yakjv.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
 }
 //**Middlewares**/
 app.use(cors());

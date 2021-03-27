@@ -17,6 +17,10 @@
 | Key                      | Value                                                                   |
 | ------------------------ | ----------------------------------------------------------------------- |
 | DEV                      | This property must be set just in the development enviorment            |
+| DB_USER_PASSWORD         | Password to connect to mongodb cluster as admin user                    |
+| DB_USER_NAME             | Username to connect to mongodb cluster admin                            |
+| DB_CLUSTER               | Cluster to connect in mongodb                                           |
+| DB_NAME                  | Name of db related to the cluster                                       |
 | GCP_KEY_FILE             | The gcp json name in which all the gcp json credentials should be saved |
 | GCP_CRED                 | Json credentials for gcp service                                        |
 | JWT_SECRET               | Value for jsonwebtoken encryption                                       |
