@@ -1,7 +1,6 @@
 //**Dependencies**/
 const express = require('express');
 const app = express();
-const bodyParser = require('body-parser');
 const db = require('./db/config');
 const chalk = require('chalk');
 const cors = require('cors');
@@ -26,11 +25,17 @@ if (process.env.DEV) {
 }
 //**Middlewares**/
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(express.urlencoded());
+app.use(express.json());
 app.use(fileupload());
 //**Routes**/
 app.use('/public', express.static(path.join(__dirname, 'uploads/')));
+app.get('/', (req, res) => {
+  return res.status(200).json({
+    ok: true,
+    response: 'Api working properly',
+  });
+});
 app.use('/api/user', userRoutes);
 app.use('/api/product', productRoutes);
 app.use('/api/orders', orderRoutes);
