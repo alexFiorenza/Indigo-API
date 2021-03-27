@@ -24,6 +24,7 @@ if (process.env.DEV) {
 } else {
   mongoUrl = `mongodb+srv://${process.env.DB_USER_NAME}:${process.env.DB_USER_PASSWORD}@${process.env.DB_CLUSTER}.yakjv.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
 }
+console.log(mongoUrl);
 //**Middlewares**/
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));

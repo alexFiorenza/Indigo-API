@@ -16,7 +16,7 @@
 
 | Key                      | Value                                                                   |
 | ------------------------ | ----------------------------------------------------------------------- |
-| DEV                      | This property must be set just in the development enviorment            |
+| DEV                      | This property must be set just in the development environment           |
 | DB_USER_PASSWORD         | Password to connect to mongodb cluster as admin user                    |
 | DB_USER_NAME             | Username to connect to mongodb cluster admin                            |
 | DB_CLUSTER               | Cluster to connect in mongodb                                           |
