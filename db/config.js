@@ -6,7 +6,6 @@ module.exports = async (url) => {
       url,
       { useUnifiedTopology: true, useNewUrlParser: true },
       (err) => {
-        console.log(url);
         return console.log(
           `Succesfully connected to: ${chalk.green('MongoDb')}`
         );
