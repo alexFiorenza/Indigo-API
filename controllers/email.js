@@ -64,7 +64,7 @@ const sendConfirmationOrder = (req, res) => {
       email: process.env.EMAIL_SENDER_ADDRESS,
       name: process.env.EMAIL_SENDER_NAME,
     },
-    template_id: process.env.transaction_completed_id.toString(),
+    template_id: process.env.TRANSACTION_COMPLETED_ID.toString(),
   };
   sendGrid
     .send(msg)
